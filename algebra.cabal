@@ -1,0 +1,143 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.36.0.
+--
+-- see: https://github.com/sol/hpack
+
+name:           algebra
+version:        0.1.0.0
+homepage:       https://github.com/githubuser/algebra#readme
+bug-reports:    https://github.com/githubuser/algebra/issues
+author:         Author name here
+maintainer:     example@example.com
+copyright:      2024 Author name here
+license:        BSD-3-Clause
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    CHANGELOG.md
+
+source-repository head
+  type: git
+  location: https://github.com/githubuser/algebra
+
+library
+  exposed-modules:
+      CategAlgebra
+      CategNatAlgebra
+  other-modules:
+      Paths_algebra
+  autogen-modules:
+      Paths_algebra
+  hs-source-dirs:
+      src
+  default-extensions:
+      BlockArguments
+      DataKinds
+      DeriveGeneric
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      ImportQualifiedPost
+      LambdaCase
+      NoStarIsType
+      OverloadedStrings
+      TypeFamilies
+      TypeApplications
+      TypeOperators
+      TypeFamilyDependencies
+      AllowAmbiguousTypes
+      ScopedTypeVariables
+      OverloadedRecordDot
+      RankNTypes
+      ImpredicativeTypes
+      ImplicitParams
+      StandaloneDeriving
+      MultiParamTypeClasses
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , hedgehog
+    , hedgehog-fn
+  default-language: Haskell2010
+
+executable algebra-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_algebra
+  autogen-modules:
+      Paths_algebra
+  hs-source-dirs:
+      app
+  default-extensions:
+      BlockArguments
+      DataKinds
+      DeriveGeneric
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      ImportQualifiedPost
+      LambdaCase
+      NoStarIsType
+      OverloadedStrings
+      TypeFamilies
+      TypeApplications
+      TypeOperators
+      TypeFamilyDependencies
+      AllowAmbiguousTypes
+      ScopedTypeVariables
+      OverloadedRecordDot
+      RankNTypes
+      ImpredicativeTypes
+      ImplicitParams
+      StandaloneDeriving
+      MultiParamTypeClasses
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      algebra
+    , base >=4.7 && <5
+    , hedgehog
+    , hedgehog-fn
+  default-language: Haskell2010
+
+test-suite algebra-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      CatLaws
+      Paths_algebra
+  autogen-modules:
+      Paths_algebra
+  hs-source-dirs:
+      test
+  default-extensions:
+      BlockArguments
+      DataKinds
+      DeriveGeneric
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      ImportQualifiedPost
+      LambdaCase
+      NoStarIsType
+      OverloadedStrings
+      TypeFamilies
+      TypeApplications
+      TypeOperators
+      TypeFamilyDependencies
+      AllowAmbiguousTypes
+      ScopedTypeVariables
+      OverloadedRecordDot
+      RankNTypes
+      ImpredicativeTypes
+      ImplicitParams
+      StandaloneDeriving
+      MultiParamTypeClasses
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      algebra
+    , base >=4.7 && <5
+    , hedgehog
+    , hedgehog-fn
+  default-language: Haskell2010

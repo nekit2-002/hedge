@@ -1,0 +1,79 @@
+name:                algebra
+version:             0.1.0.0
+github:              "githubuser/algebra"
+license:             BSD-3-Clause
+author:              "Author name here"
+maintainer:          "example@example.com"
+copyright:           "2024 Author name here"
+
+extra-source-files:
+- README.md
+- CHANGELOG.md
+
+default-extensions:
+- BlockArguments
+- DataKinds
+- DeriveGeneric
+- FlexibleContexts
+- FlexibleInstances
+- GADTs
+- ImportQualifiedPost
+- LambdaCase
+- NoStarIsType
+- OverloadedStrings
+- TypeFamilies
+- TypeApplications
+- TypeOperators
+- TypeFamilyDependencies
+- AllowAmbiguousTypes
+- ScopedTypeVariables
+- OverloadedRecordDot
+- RankNTypes
+- ImpredicativeTypes
+- ImplicitParams
+- StandaloneDeriving
+- MultiParamTypeClasses
+
+dependencies:
+- base >= 4.7 && < 5
+- hedgehog
+- hedgehog-fn
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  algebra-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - algebra
+
+tests:
+  algebra-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - algebra
+    - hedgehog
+    - hedgehog-fn
+  
