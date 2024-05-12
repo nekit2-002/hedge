@@ -106,6 +106,7 @@ test-suite algebra-test
   main-is: Spec.hs
   other-modules:
       CatLaws
+      NatTests
       Paths_algebra
   autogen-modules:
       Paths_algebra
