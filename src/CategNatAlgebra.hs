@@ -10,7 +10,7 @@ newtype Nat = N {n :: Int32} deriving (Show, Eq, Generic, Typeable)
 instance Arg Nat
 
 instance Vary Nat where
-  vary = contramap (\(N n) -> if 0 <= n then n else (-n)) vary
+  vary = contramap (\(N n) -> abs n) vary
 
 class CategAlgebra obj => CategNatAlgebra obj where
   nat :: (LogicAlgebra (obj Nat), Typeable Nat, Eq Nat, Show Nat, Arg Nat) =>
