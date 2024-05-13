@@ -1,19 +1,17 @@
 import CategAlgebra
 import CatLaws
+import NatTests
 import Data.Bifunctor (bimap)
 import Hedgehog
-import Hedgehog.Function.Internal
 import Hedgehog.Internal.Property
-import Hedgehog.Internal.Range 
-import Hedgehog.Gen  (integral)
 
 class CategAlgebra obj => Tester obj where
   catLaws :: Group
 
 instance Tester NamedSet where
-  catLaws = Group "Category laws" $ map (bimap PropertyName (withTests 200 . property))tests
+  catLaws = Group "Category laws" $ map (bimap PropertyName (withTests 200 . property)) tests
     where
-      (specs, sets) = categoryLaws [U intSet]
+      (specs, sets) = categoryLaws []
       comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
       comps2 = (,) <$> sets <*> sets
       compAssocParams =
@@ -25,11 +23,8 @@ instance Tester NamedSet where
       params = compAssocParams ++ compIdParams ++ compIdParams
       tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) specs params
 
-intSet :: NamedSet Int
-intSet = NamedSet "Int" (integral $ constantBounded) vary 0
-
-
 main :: IO ()
 main = do
   _ <- checkParallel $ catLaws @NamedSet
+  _ <- checkParallel $ natLaws @NamedSet
   pure ()
