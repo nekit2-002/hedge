@@ -79,8 +79,10 @@ instance (Show a, Eq a, Typeable a, Arg a) => Determinable (NamedSet a) where
     let x = fromJust $ cast v
       in pure $ x /= el
 
-  eql _ (UU v1) (UU y) = not <$> do
+  eql (NamedSet _ _ _ st) (UU v1) (UU v2) = not <$> do
     let x = fromJust $ cast v1
+        y = fromJust $ cast v2
+        _ = st == x -- to specify the type to which x and y are casted
       in pure $ y /= x
 
 instance (Show a, Eq a, Typeable a, Arg a) => LogicAlgebra (NamedSet a) where

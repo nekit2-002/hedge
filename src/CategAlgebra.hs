@@ -5,7 +5,7 @@ import Data.Kind
 
 import Hedgehog.Function
 
-data UU = forall t. (Eq t, Show t, Typeable t) => UU t deriving (Typeable)
+data UU = forall t. (Show t, Typeable t) => UU t deriving (Typeable)
 
 class Universum s where
   type UFormula s
