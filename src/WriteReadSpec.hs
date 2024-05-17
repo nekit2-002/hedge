@@ -255,7 +255,7 @@ longToULong :: CLong -> CULong
 longToULong (CLong n) = CULong . fromIntegral $ abs n -- TODO This should be implemented differently
 
 pathGen :: Gen Path
-pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/a" ++ s ++ ".txt")
+pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s ++ ".txt")
   <$> string (constant 5 15) alpha
 
 pathCoGen :: CoGen Path
@@ -263,7 +263,7 @@ pathCoGen = go >$< (vary :: (CoGen [Int8]))
   where
     go (Path p') =
       let prep = replaceWithAlpha $ map castCCharToChar p'
-          p = "/Users/nikita/hedge/tmp/a" ++ prep ++ ".txt"
+          p = "/Users/nikita/hedge/tmp/" ++ prep ++ ".txt"
         in map ((\(CChar n) -> n) . castCharToCChar) p
 
 replaceWithAlpha :: String -> String
