@@ -75,7 +75,9 @@ foreign import capi "unistd.h read" read :: CInt -> Ptr () -> CULong -> IO CLong
 
 type family Categorical (t :: Type) :: Constraint
 type instance Categorical t = (Typeable t, Eq t, Show t, Arg t)
-newtype Path = Path {p :: [CChar]} deriving (Typeable, Eq, Show, Generic)
+newtype Path = Path {p :: [CChar]} deriving (Typeable, Eq, Generic)
+instance Show Path where
+  show (Path p) = map castCCharToChar p
 deriving instance Generic CChar
 instance Arg CChar
 instance Arg Path
@@ -87,35 +89,33 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
   path :: (LogicAlgebra (ioObj Path), Categorical Path) =>
     ioObj Path
   
-  count :: (LogicAlgebra (ioObj Nat), Categorical Nat) =>
-    ioObj Nat
+  -- count :: (LogicAlgebra (ioObj Nat), Categorical Nat) =>
+  --   ioObj Nat
 
   buf :: (LogicAlgebra (ioObj Buf), Categorical Buf) =>
     ioObj Buf
 
-  readM :: UU -> Morphism ioObj
-  readMF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj)
-  writeM :: UU -> UU -> Morphism ioObj
-  writeMF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj) -> UFormula (Hom ioObj)
+  readM :: Morphism ioObj
+  writeM :: UU -> Morphism ioObj
+  writeMF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj)
 
   writeReadId :: (LogicAlgebra (ioObj Nat), Categorical Nat,
     LogicAlgebra (ioObj Path), Categorical Path,
     LogicAlgebra (ioObj Buf), Categorical Buf) => (String, Prop (Hom ioObj))
-  writeReadId = ("WriteReadId", convertTo @ioObj $ ground @(ioObj Nat) sp [])
+  writeReadId = ("WriteReadId", convertTo @ioObj $ ground @(ioObj Path) sp [])
     where
       bufHom = hom @ioObj buf buf
       quote' = quote @(Hom ioObj)
       pick' = pick @(Hom ioObj)
       compF' = compF @ioObj
       sp =
-        forall' @(ioObj Nat) count . pathToNat @ioObj .
         forall' @(ioObj Path) path . convertFrom @ioObj .
         eqlF bufHom (quote' . UU $ idm @ioObj buf) $
-        compF' (writeMF @ioObj (pick' 0) (pick' 1)) (readMF @ioObj (pick' 0))
+        compF' (writeMF @ioObj (pick' 0)) (quote'. UU $ readM @ioObj)
         -- writeReadF @ioObj (pick' 0) (pick' 1)
 
   pathToNat :: PFormula (ioObj Path) -> PFormula (ioObj Nat)
-  convertTo :: Prop (ioObj Nat) -> Prop (Hom ioObj)
+  convertTo :: Prop (ioObj Path) -> Prop (Hom ioObj)
   convertFrom :: PFormula (Hom ioObj) -> PFormula (ioObj Path)
 
   writeReadSpec :: (LogicAlgebra (ioObj ()), LogicAlgebra (ioObj Path), LogicAlgebra (ioObj Nat),
@@ -123,7 +123,7 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
     => ([(String, Prop (Hom ioObj))], [EvalUnit ioObj])
   writeReadSpec = (writeReadId @ioObj : props, objs)
     where
-      (props, objs) = categoryLaws [U path, U count, U buf]
+      (props, objs) = categoryLaws [U path, U buf]
 
 -- ! ----------Instances and interpreters---------------- ! --
 data (Categorical a) => NamedIOSet a =
@@ -134,8 +134,8 @@ data IOHom = forall a b. (Show a, Eq a, Typeable a, Show b, Eq b, Typeable b) =>
   IOHom {ioDom :: Gen (IO a), ioMorphs :: Gen (Fn a (IO b))}
   
 
-instance Show (IO a) where
-  show _ = "IO object"
+instance Typeable a => Show (IO a) where
+  show v = showsTypeRep (typeOf v) ""
 
 instance Universum IOHom where
   type UFormula IOHom = [UU] -> UU
@@ -222,21 +222,15 @@ instance CategAlgebra NamedIOSet where
 
 instance WriteReadSpec NamedIOSet where
   path = NamedIOSet "Path" pathGen pathCoGen
-  count = NamedIOSet "Count type" (N <$> integral (constant 10 20)) vary
   buf = NamedIOSet "Buffer" bufGen bufCoGen
   pathToNat = id
   convertFrom = id
   convertTo = id
-  readMF x e = UU $ readM @NamedIOSet (x e)
-  writeMF x y e = UU $ writeM @NamedIOSet (x e) (y e)
-  readM (UU (path' :: t)) =
+  writeMF x e = UU $ writeM @NamedIOSet (x e)
+  readM =
     IOMorphism $ \ (buf_and_wnbs :: IO (CString, CLong)) -> do
-      (buf', wnbs@(CLong n)) <- buf_and_wnbs
-      buf <- reallocBytes buf' (fromIntegral n)
-      let prepath = fromJust $ cast @t @(IO Path) path'
-          path = prepath >>= \(Path p) -> pure $ map castCCharToChar p
-
-      cpath <- path >>= newCString
+      (cpath, wnbs@(CLong n)) <- buf_and_wnbs
+      buf <- callocBytes $ fromIntegral (n + 1)
       fd1@(CInt n1) <- open cpath (CInt 0x0002) (CUShort 0)
       if n1 < 0 then fromJust Nothing else do
         _ <- WriteReadSpec.read fd1 (castPtr buf) (longToULong wnbs)
@@ -244,14 +238,13 @@ instance WriteReadSpec NamedIOSet where
         str <- peekCString buf
         pure . PreCString $ map castCharToCChar str
 
-  writeM (UU (path' :: t1)) (UU (count' :: t2)) = 
+  writeM (UU (path' :: t1)) = 
     IOMorphism $ \(buf' :: IO Buf) -> do
       (PreCString prebuf) <- buf'
       let buf'' = map castCCharToChar prebuf
           prepath = fromJust $ cast @t1 @(IO Path) path'
           path = prepath >>= \(Path p) -> pure $ map castCCharToChar p
-          count'' = (.n) <$> fromJust (cast @t2 @(IO Nat) count')
-      count <- count'' >>= \c -> pure $ min c (fromIntegral $ length buf'')
+          count = fromIntegral $ length buf''
       buf <- newCString buf''
       cpath <- path >>= newCString
       fd@(CInt n) <- open cpath (CInt $ 0x0002 .|. 0x00000200) (CUShort $ 0000400 .|. 0000200)
@@ -259,7 +252,7 @@ instance WriteReadSpec NamedIOSet where
         else do
         wnbs <- write fd (castPtr buf) (CULong $ intToWord count)
         _ <- close fd
-        pure (buf, wnbs)
+        pure (cpath, wnbs)
 
 intToWord :: Int32 -> Word64
 intToWord = fromIntegral . abs -- TODO This should be implemented differently
@@ -268,7 +261,8 @@ longToULong :: CLong -> CULong
 longToULong (CLong n) = CULong . fromIntegral $ abs n -- TODO This should be implemented differently
 
 pathGen :: Gen Path
-pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s ++ ".txt")
+pathGen = --Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s ++ ".txt")
+  Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s)
   <$> string (constant 1 5) alpha
 
 pathCoGen :: CoGen Path
