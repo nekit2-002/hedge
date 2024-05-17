@@ -236,6 +236,8 @@ instance WriteReadSpec NamedIOSet where
         _ <- WriteReadSpec.read fd1 (castPtr buf) (longToULong wnbs)
         _ <- close fd1
         str <- peekCString buf
+        _ <- free cpath
+        _ <- free buf
         pure . PreCString $ map castCharToCChar str
 
   writeM (UU (path' :: t1)) = 
