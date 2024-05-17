@@ -95,7 +95,8 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
   buf :: (LogicAlgebra (ioObj Buf), Categorical Buf) =>
     ioObj Buf
 
-  readM :: Morphism ioObj
+  readM :: UU -> Morphism ioObj
+  readMF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj)
   writeM :: UU -> Morphism ioObj
   writeMF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj)
 
@@ -111,8 +112,7 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
       sp =
         forall' @(ioObj Path) path . convertFrom @ioObj .
         eqlF bufHom (quote' . UU $ idm @ioObj buf) $
-        compF' (writeMF @ioObj (pick' 0)) (quote'. UU $ readM @ioObj)
-        -- writeReadF @ioObj (pick' 0) (pick' 1)
+        compF' (writeMF @ioObj (pick' 0)) (readMF @ioObj (pick' 0))
 
   pathToNat :: PFormula (ioObj Path) -> PFormula (ioObj Nat)
   convertTo :: Prop (ioObj Path) -> Prop (Hom ioObj)
@@ -227,9 +227,13 @@ instance WriteReadSpec NamedIOSet where
   convertFrom = id
   convertTo = id
   writeMF x e = UU $ writeM @NamedIOSet (x e)
-  readM =
-    IOMorphism $ \ (buf_and_wnbs :: IO (CString, CLong)) -> do
-      (cpath, wnbs@(CLong n)) <- buf_and_wnbs
+  readMF x e = UU $ readM @NamedIOSet (x e)
+  readM (UU (path' :: t1)) =
+    IOMorphism $ \ (wnbs' :: IO CLong) -> do
+      let prepath = fromJust $ cast @t1 @(IO Path) path'
+          path = prepath >>= \(Path p) -> pure $ map castCCharToChar p
+      cpath <- path >>= newCString
+      wnbs@(CLong n) <- wnbs'
       buf <- callocBytes $ fromIntegral (n + 1)
       fd1@(CInt n1) <- open cpath (CInt 0x0002) (CUShort 0)
       if n1 < 0 then fromJust Nothing else do
@@ -254,7 +258,7 @@ instance WriteReadSpec NamedIOSet where
         else do
         wnbs <- write fd (castPtr buf) (CULong $ intToWord count)
         _ <- close fd
-        pure (cpath, wnbs)
+        pure wnbs
 
 intToWord :: Int32 -> Word64
 intToWord = fromIntegral . abs -- TODO This should be implemented differently
@@ -263,8 +267,7 @@ longToULong :: CLong -> CULong
 longToULong (CLong n) = CULong . fromIntegral $ abs n -- TODO This should be implemented differently
 
 pathGen :: Gen Path
-pathGen = --Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s ++ ".txt")
-  Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s)
+pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s ++ ".txt")
   <$> string (constant 1 5) alpha
 
 pathCoGen :: CoGen Path
