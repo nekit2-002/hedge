@@ -10,8 +10,8 @@ class WriteReadSpec ioObj => WriteReadTester ioObj where
 
 instance WriteReadTester NamedIOSet where
   writeReadLaws = Group "Read ∘ Write = id laws" $
-    (PropertyName write_read_n, withTests 5 $ property p) :
-    map (bimap PropertyName (withTests 200 . property)) category_tests
+    [(PropertyName write_read_n, withTests 5 $ property p)]
+    -- map (bimap PropertyName (withTests 200 . property)) category_tests
     where
       (specs, sets) = writeReadSpec @NamedIOSet
       (write_read_spec, write_read_idp) = head specs

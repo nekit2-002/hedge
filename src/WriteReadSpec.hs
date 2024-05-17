@@ -11,6 +11,7 @@ import Data.Functor.Contravariant ((>$<))
 import CategNatAlgebra (Nat(..))
 import Foreign.C.Types
 import Foreign.Ptr(Ptr, castPtr)
+import Foreign.Marshal.Alloc
 import Foreign.C (CString, castCCharToChar, newCString, peekCString, castCharToCChar)
 import Hedgehog (Gen, PropertyT)
 import Hedgehog.Internal.Property (forAll, evalIO)
@@ -92,8 +93,10 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
   buf :: (LogicAlgebra (ioObj Buf), Categorical Buf) =>
     ioObj Buf
 
-  writeRead :: UU -> UU -> Morphism ioObj
-  writeReadF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj) -> UFormula (Hom ioObj)
+  readM :: UU -> Morphism ioObj
+  readMF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj)
+  writeM :: UU -> UU -> Morphism ioObj
+  writeMF :: UFormula (Hom ioObj) -> UFormula (Hom ioObj) -> UFormula (Hom ioObj)
 
   writeReadId :: (LogicAlgebra (ioObj Nat), Categorical Nat,
     LogicAlgebra (ioObj Path), Categorical Path,
@@ -103,11 +106,13 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
       bufHom = hom @ioObj buf buf
       quote' = quote @(Hom ioObj)
       pick' = pick @(Hom ioObj)
+      compF' = compF @ioObj
       sp =
         forall' @(ioObj Nat) count . pathToNat @ioObj .
         forall' @(ioObj Path) path . convertFrom @ioObj .
         eqlF bufHom (quote' . UU $ idm @ioObj buf) $
-        writeReadF @ioObj (pick' 0) (pick' 1)
+        compF' (writeMF @ioObj (pick' 0) (pick' 1)) (readMF @ioObj (pick' 0))
+        -- writeReadF @ioObj (pick' 0) (pick' 1)
 
   pathToNat :: PFormula (ioObj Path) -> PFormula (ioObj Nat)
   convertTo :: Prop (ioObj Nat) -> Prop (Hom ioObj)
@@ -217,36 +222,44 @@ instance CategAlgebra NamedIOSet where
 
 instance WriteReadSpec NamedIOSet where
   path = NamedIOSet "Path" pathGen pathCoGen
-  count = NamedIOSet "Count type" (N <$> integral (constant 0 10)) vary
+  count = NamedIOSet "Count type" (N <$> integral (constant 10 20)) vary
   buf = NamedIOSet "Buffer" bufGen bufCoGen
-  writeRead (UU (path' :: t1)) (UU (count' :: t2)) =
+  pathToNat = id
+  convertFrom = id
+  convertTo = id
+  readMF x e = UU $ readM @NamedIOSet (x e)
+  writeMF x y e = UU $ writeM @NamedIOSet (x e) (y e)
+  readM (UU (path' :: t)) =
+    IOMorphism $ \ (buf_and_wnbs :: IO (CString, CLong)) -> do
+      (buf', wnbs@(CLong n)) <- buf_and_wnbs
+      buf <- reallocBytes buf' (fromIntegral n)
+      let prepath = fromJust $ cast @t @(IO Path) path'
+          path = prepath >>= \(Path p) -> pure $ map castCCharToChar p
+
+      cpath <- path >>= newCString
+      fd1@(CInt n1) <- open cpath (CInt 0x0002) (CUShort 0)
+      if n1 < 0 then fromJust Nothing else do
+        _ <- WriteReadSpec.read fd1 (castPtr buf) (longToULong wnbs)
+        _ <- close fd1
+        str <- peekCString buf
+        pure . PreCString $ map castCharToCChar str
+
+  writeM (UU (path' :: t1)) (UU (count' :: t2)) = 
     IOMorphism $ \(buf' :: IO Buf) -> do
       (PreCString prebuf) <- buf'
       let buf'' = map castCCharToChar prebuf
           prepath = fromJust $ cast @t1 @(IO Path) path'
-          path'' = prepath >>= \(Path p) -> pure $ map castCCharToChar p
+          path = prepath >>= \(Path p) -> pure $ map castCCharToChar p
           count'' = (.n) <$> fromJust (cast @t2 @(IO Nat) count')
-      path <- path''
-      count <- count'' >>= \c -> pure $ min c (fromIntegral $ length buf'' - 1)
+      count <- count'' >>= \c -> pure $ min c (fromIntegral $ length buf'')
       buf <- newCString buf''
-      cpath <- newCString path
-      fd@(CInt n) <- open cpath (CInt $ 0x0002 .|. 0x00000200) (CUShort $ 0000400 .|. 0000200) -- TODO Think about constants
+      cpath <- path >>= newCString
+      fd@(CInt n) <- open cpath (CInt $ 0x0002 .|. 0x00000200) (CUShort $ 0000400 .|. 0000200)
       if n < 0 then fromJust Nothing
         else do
-          wnbs <- write fd (castPtr buf) (CULong $ intToWord count)
-          _ <- close fd
-          fd1@(CInt n1) <- open cpath (CInt 0x0002) (CUShort 0)
-          if n1 < 0 then fromJust Nothing else do
-              _ <- WriteReadSpec.read fd1 (castPtr buf) (longToULong wnbs)
-              _ <- close fd1
-              str <- peekCString buf
-              pure . PreCString $ map castCharToCChar str
-
-  writeReadF x y e = UU $ writeRead @NamedIOSet (x e) (y e)
-  convertTo = id
-  convertFrom = id
-  pathToNat = id
-
+        wnbs <- write fd (castPtr buf) (CULong $ intToWord count)
+        _ <- close fd
+        pure (buf, wnbs)
 
 intToWord :: Int32 -> Word64
 intToWord = fromIntegral . abs -- TODO This should be implemented differently
@@ -256,7 +269,7 @@ longToULong (CLong n) = CULong . fromIntegral $ abs n -- TODO This should be imp
 
 pathGen :: Gen Path
 pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s ++ ".txt")
-  <$> string (constant 5 15) alpha
+  <$> string (constant 1 5) alpha
 
 pathCoGen :: CoGen Path
 pathCoGen = go >$< (vary :: (CoGen [Int8]))
@@ -271,7 +284,7 @@ replaceWithAlpha [] = []
 replaceWithAlpha (c:cs) = if isAlpha c then c : replaceWithAlpha cs else 'a': replaceWithAlpha cs
 
 bufGen :: Gen Buf
-bufGen = PreCString . map castCharToCChar <$> string (constant 10 20) alpha
+bufGen = PreCString <$> (map castCharToCChar <$> string (constant 10 20) alpha)
 
 bufCoGen :: CoGen Buf
 bufCoGen = go >$< (vary :: (CoGen [Int8]))

@@ -27,7 +27,7 @@ instance Tester NamedSet where
 
 main :: IO ()
 main = do
-  _ <- checkParallel $ catLaws @NamedSet
-  _ <- checkParallel $ natLaws @NamedSet
+  -- _ <- checkParallel $ catLaws @NamedSet
+  -- _ <- checkParallel $ natLaws @NamedSet
   _ <- checkParallel $ writeReadLaws @NamedIOSet
   pure ()

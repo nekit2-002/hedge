@@ -1,3 +1,3 @@
 #! /bin/bash
 
-rm ../tmp/*.txt
+rm ./tmp/*.txt
