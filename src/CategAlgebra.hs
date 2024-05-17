@@ -29,7 +29,7 @@ class Determinable s => LogicAlgebra s where
 
 data EvalUnit (obj :: Type -> Type) =
   forall t. (Eq t, Show t, Typeable t, Arg t, LogicAlgebra (obj t)) => U (obj t)
-class (LogicAlgebra (Hom obj), Typeable (Morphism obj), Eq (Morphism obj), Show (Morphism obj)) => 
+class (LogicAlgebra (Hom obj), Typeable (Morphism obj), Show (Morphism obj)) => 
   CategAlgebra (obj :: Type -> Type) where
   type Morphism obj
   type Hom obj

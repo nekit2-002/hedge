@@ -3,7 +3,7 @@ module CatLaws where
 import CategAlgebra
 import Data.Typeable
 import Data.Maybe (fromJust)
-import Hedgehog
+import Hedgehog ( Gen, PropertyT, forAll )
 import Hedgehog.Function.Internal
 
 -- ! ---------------------------------------------------------------------- ! --
@@ -54,8 +54,8 @@ instance Determinable HomImpl where
     case cast v1 of
       Just (Morphism _ f) -> case cast v2 of
         Just (Morphism _ g) -> pure $ Morphism (fromJust $ cast d) f == Morphism (fromJust $ cast d) g
-        _ -> pure True
-      _ -> pure True
+        _ -> pure False
+      _ -> pure False
 
 instance LogicAlgebra HomImpl where
   type PFormula HomImpl = [UU] -> PropertyT IO Bool
@@ -79,11 +79,11 @@ instance (Show a, Eq a, Typeable a, Arg a) => Determinable (NamedSet a) where
     let x = fromJust $ cast v
       in pure $ x /= el
 
-  eql (NamedSet _ _ _ st) (UU v1) (UU v2) = not <$> do
+  eql (NamedSet _ _ _ st) (UU v1) (UU v2) = do
     let x = fromJust $ cast v1
         y = fromJust $ cast v2
         _ = st == x -- to specify the type to which x and y are casted
-      in pure $ y /= x
+      in pure $ y == x
 
 instance (Show a, Eq a, Typeable a, Arg a) => LogicAlgebra (NamedSet a) where
   type PFormula (NamedSet a) = [UU] -> PropertyT IO Bool

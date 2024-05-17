@@ -26,6 +26,7 @@ library
   exposed-modules:
       CategAlgebra
       CategNatAlgebra
+      WriteReadSpec
   other-modules:
       Paths_algebra
   autogen-modules:
@@ -55,6 +56,8 @@ library
       ImplicitParams
       StandaloneDeriving
       MultiParamTypeClasses
+      CApiFFI
+      StandaloneDeriving
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-name-shadowing -Wno-orphans
   build-depends:
       base >=4.7 && <5
@@ -93,6 +96,8 @@ executable algebra-exe
       ImplicitParams
       StandaloneDeriving
       MultiParamTypeClasses
+      CApiFFI
+      StandaloneDeriving
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       algebra
@@ -107,6 +112,7 @@ test-suite algebra-test
   other-modules:
       CatLaws
       NatTests
+      WriteReadTest
       Paths_algebra
   autogen-modules:
       Paths_algebra
@@ -135,6 +141,8 @@ test-suite algebra-test
       ImplicitParams
       StandaloneDeriving
       MultiParamTypeClasses
+      CApiFFI
+      StandaloneDeriving
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-name-shadowing -Wno-orphans -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       algebra
