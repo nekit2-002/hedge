@@ -1,23 +1,22 @@
 module WriteReadSpec where
 
 import CategAlgebra
-import Data.Typeable
-import Data.Int ( Int8, Int32 )
-import Data.Word ( Word64 )
-import Data.Char
+import Data.Typeable (Typeable, cast, showsTypeRep, typeOf)
+import Data.Int(Int8, Int32 )
+import Data.Word (Word64)
+import Data.Char (isAlpha)
 import Data.Maybe (fromJust)
 import Data.Bits ((.|.))
-import Data.Functor.Contravariant
-import Control.Monad
+import Data.Functor.Contravariant ((>$<))
 import CategNatAlgebra (Nat(..))
 import Foreign.C.Types
-import Foreign.Ptr(Ptr(..), castPtr)
+import Foreign.Ptr(Ptr, castPtr)
 import Foreign.C (CString, castCCharToChar, newCString, peekCString, castCharToCChar)
 import Hedgehog (Gen, PropertyT)
 import Hedgehog.Internal.Property (forAll, evalIO)
 import Hedgehog.Internal.Gen (string, alpha, integral)
 import Hedgehog.Internal.Range (constant)
-import Hedgehog.Function.Internal
+import Hedgehog.Function.Internal (fnWith, forAllFn, Arg, CoGen, Fn, Vary(vary))
 import GHC.Generics (Generic)
 import Data.Kind (Type, Constraint)
 
@@ -256,15 +255,15 @@ longToULong :: CLong -> CULong
 longToULong (CLong n) = CULong . fromIntegral $ abs n -- TODO This should be implemented differently
 
 pathGen :: Gen Path
-pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp" ++ s ++ ".txt")
-  <$> string (constant 0 10) alpha
+pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/a" ++ s ++ ".txt")
+  <$> string (constant 5 15) alpha
 
 pathCoGen :: CoGen Path
 pathCoGen = go >$< (vary :: (CoGen [Int8]))
   where
     go (Path p') =
       let prep = replaceWithAlpha $ map castCCharToChar p'
-          p = "/Users/nikita/hedge/tmp" ++ prep ++ ".txt"
+          p = "/Users/nikita/hedge/tmp/a" ++ prep ++ ".txt"
         in map ((\(CChar n) -> n) . castCharToCChar) p
 
 replaceWithAlpha :: String -> String
@@ -272,7 +271,7 @@ replaceWithAlpha [] = []
 replaceWithAlpha (c:cs) = if isAlpha c then c : replaceWithAlpha cs else 'a': replaceWithAlpha cs
 
 bufGen :: Gen Buf
-bufGen = PreCString . map castCharToCChar <$> string (constant 0 10) alpha
+bufGen = PreCString . map castCharToCChar <$> string (constant 10 20) alpha
 
 bufCoGen :: CoGen Buf
 bufCoGen = go >$< (vary :: (CoGen [Int8]))

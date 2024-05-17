@@ -1,9 +1,11 @@
 import CategAlgebra
 import CatLaws
 import NatTests
+import WriteReadTest
 import Data.Bifunctor (bimap)
 import Hedgehog
 import Hedgehog.Internal.Property
+import WriteReadSpec (NamedIOSet(NamedIOSet))
 
 class CategAlgebra obj => Tester obj where
   catLaws :: Group
@@ -27,4 +29,5 @@ main :: IO ()
 main = do
   _ <- checkParallel $ catLaws @NamedSet
   _ <- checkParallel $ natLaws @NamedSet
+  _ <- checkParallel $ writeReadLaws @NamedIOSet
   pure ()
