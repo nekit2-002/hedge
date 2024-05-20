@@ -83,6 +83,9 @@ instance Show Buf where
   show (PreCString b) = map castCCharToChar b
 instance Arg Buf
 
+deriving instance Generic CLong
+instance Arg CLong where
+
 class CategAlgebra ioObj => WriteReadSpec ioObj where
   path :: (LogicAlgebra (ioObj Path), Categorical Path) =>
     ioObj Path
@@ -122,9 +125,9 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
 -- ! ----------Instances and interpreters---------------- ! --
 data (Categorical a) => NamedIOSet a =
   NamedIOSet {ioSetName :: String, ioGen :: Gen a, ioCoGen :: CoGen a}
-data IOMorphism = forall a b. (Show b, Eq b, Typeable b, Show a, Eq a, Typeable a) =>
+data IOMorphism = forall a b. (Categorical b, Categorical a) =>
   IOMorphism {f :: IO a -> IO b} deriving (Typeable)
-data IOHom = forall a b. (Show a, Eq a, Typeable a, Show b, Eq b, Typeable b) =>
+data IOHom = forall a b. (Categorical a, Categorical b) =>
   IOHom {ioDom :: Gen (IO a), ioMorphs :: Gen (Fn a (IO b))}
   
 instance Typeable a => Show (IO a) where

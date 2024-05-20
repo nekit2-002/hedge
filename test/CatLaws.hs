@@ -11,9 +11,9 @@ import Hedgehog.Function.Internal
 -- ! Instances ! --
 data (Categorical a) => NamedSet a = 
   NamedSet {setName :: String, gen :: Gen a, cogen :: CoGen a}
-data MorphismImpl = forall a b. (Show b, Eq b, Typeable b, Show a, Eq a, Typeable a) => 
+data MorphismImpl = forall a b. (Categorical b, Categorical a) => 
   Morphism {f :: a -> b} deriving (Typeable)
-data HomImpl = forall a b. (Show a, Eq a, Typeable a, Show b, Eq b, Typeable b) =>
+data HomImpl = forall a b. (Categorical a, Categorical b) =>
   Hom {dom :: Gen a, morphs :: Gen (Fn a b)}
 
 instance Show MorphismImpl where
