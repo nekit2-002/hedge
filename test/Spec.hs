@@ -1,17 +1,17 @@
 import CategAlgebra
-import CatLaws
-import NatTests
-import WriteReadTest
+import CatLaws ( NamedSet(NamedSet) )
+import NatTests (natLaws)
+import WriteReadTest ( writeReadLaws)
 import Data.Bifunctor (bimap)
 import Hedgehog
-import Hedgehog.Internal.Property
-import WriteReadSpec (NamedIOSet(NamedIOSet))
+import Hedgehog.Internal.Property (PropertyName(PropertyName))
+import WriteReadSpec (NamedIOSet)
 
 class CategAlgebra obj => Tester obj where
   catLaws :: Group
 
 instance Tester NamedSet where
-  catLaws = Group "Category laws" $ map (bimap PropertyName (withTests 200 . property)) tests
+  catLaws = Group "Category laws" $ map (bimap PropertyName (withTests 300 . property)) tests
     where
       (specs, sets) = categoryLaws []
       comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets

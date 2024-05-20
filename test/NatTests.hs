@@ -2,11 +2,11 @@ module NatTests where
 -- ojgoig
 
 import CategAlgebra (EvalUnit(U))
-import CategNatAlgebra
+import CategNatAlgebra (Nat(N), CategNatAlgebra(succIdSpec, nat, succM) )
 import CatLaws (MorphismImpl(Morphism), NamedSet(NamedSet))
 import Hedgehog.Internal.Range (constant)
 import Hedgehog.Internal.Gen (integral) 
-import Hedgehog.Function
+import Hedgehog.Function (Vary(vary))
 import Data.Bifunctor (bimap)
 import Hedgehog.Internal.Property
 

@@ -1,10 +1,11 @@
 module CatLaws where
 
 import CategAlgebra
-import Data.Typeable
+import Data.Typeable (Typeable, cast, showsTypeRep, typeOf)
 import Data.Maybe (fromJust)
-import Hedgehog ( Gen, PropertyT, forAll )
+import Hedgehog (Gen, PropertyT, forAll)
 import Hedgehog.Function.Internal
+    ( fnWith, forAllFn, Arg, CoGen, Fn, Vary(vary) )
 
 -- ! ---------------------------------------------------------------------- ! --
 -- ! Instances ! --

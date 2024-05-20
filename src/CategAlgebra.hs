@@ -1,11 +1,12 @@
 module CategAlgebra where
 
-import Data.Typeable
-import Data.Kind
-
-import Hedgehog.Function
+import Data.Typeable (Typeable)
+import Data.Kind (Type, Constraint)
+import Hedgehog.Function (Arg)
 
 data UU = forall t. (Show t, Typeable t) => UU t deriving (Typeable)
+type family Categorical (t :: Type) :: Constraint
+type instance Categorical t = (Typeable t, Eq t, Show t, Arg t)
 
 class Universum s where
   type UFormula s
@@ -28,23 +29,21 @@ class Determinable s => LogicAlgebra s where
   eqReflSpec s = ground @s (forall' @s s $ eqlF @s s (pick @s 0) (pick @s 0)) []
 
 data EvalUnit (obj :: Type -> Type) =
-  forall t. (Eq t, Show t, Typeable t, Arg t, LogicAlgebra (obj t)) => U (obj t)
+  forall t. (Categorical t, LogicAlgebra (obj t)) => U (obj t)
 class (LogicAlgebra (Hom obj), Typeable (Morphism obj), Show (Morphism obj)) => 
   CategAlgebra (obj :: Type -> Type) where
   type Morphism obj
   type Hom obj
 
-  hom :: (LogicAlgebra (obj a), LogicAlgebra (obj b), Typeable b,
-    Typeable a, Eq b, Eq a, Show b, Show a, Arg a, Arg b) =>
+  hom :: (LogicAlgebra (obj a), LogicAlgebra (obj b), Categorical a, Categorical b) =>
     obj a -> obj b -> Hom obj
 
   comp :: Morphism obj -> Morphism obj -> Morphism obj
   compF :: UFormula (Hom obj) -> UFormula (Hom obj) -> UFormula (Hom obj)
 
   compAssSpec :: (LogicAlgebra (obj a), LogicAlgebra (obj b),
-    LogicAlgebra (obj c), LogicAlgebra (obj d), Show a, Eq a, Typeable a,
-    Arg a, Show b, Eq b, Typeable b, Arg b, Show c, Eq c, Typeable c,
-    Arg c, Eq d, Show d, Typeable d, Arg d) =>
+    LogicAlgebra (obj c), LogicAlgebra (obj d), Categorical a,
+    Categorical b, Categorical c, Categorical d) =>
     obj a -> obj b -> obj c -> obj d -> (String, Prop (Hom obj))
   compAssSpec (a :: obj a) (b :: obj b) (c :: obj c) (d :: obj d) = ("compAssSpec", ground @(Hom obj) sp [])
     where
@@ -58,12 +57,11 @@ class (LogicAlgebra (Hom obj), Typeable (Morphism obj), Show (Morphism obj)) =>
         eqlF aToD (compF' (pick' 0) . compF' (pick' 1) $ pick' 2) .
           compF' (compF' (pick' 0) $ pick' 1) $ pick' 2
 
-  idm :: (LogicAlgebra (obj a),Typeable a, Eq a, Show a, Arg a)=>
+  idm :: (LogicAlgebra (obj a), Categorical a)=>
     obj a -> Morphism obj
 
   idLSpec :: (LogicAlgebra (obj a), LogicAlgebra (obj b),
-    Typeable a, Eq a, Show a, Arg a,
-    Typeable b, Eq b, Show b, Arg b) =>
+    Categorical a, Categorical b) =>
     obj a -> obj b -> (String, Prop (Hom obj))
   idLSpec (a :: obj a) (b :: obj b) = ("idLSpec", ground @(Hom obj) sp [])
     where
@@ -74,8 +72,7 @@ class (LogicAlgebra (Hom obj), Typeable (Morphism obj), Show (Morphism obj)) =>
         eqlF f (compF' (pick' 0) (quote @(Hom obj) $ UU (idm b))) $ pick' 0
 
   idRSpec :: (LogicAlgebra (obj a), LogicAlgebra (obj b),
-    Typeable a, Eq a, Show a, Arg a,
-    Typeable b, Eq b, Show b, Arg b) =>
+    Categorical a, Categorical b) =>
     obj a -> obj b -> (String, Prop (Hom obj))
   idRSpec (a :: obj a) (b :: obj b) = ("idRSpec", ground @(Hom obj) sp [])
     where
@@ -85,9 +82,9 @@ class (LogicAlgebra (Hom obj), Typeable (Morphism obj), Show (Morphism obj)) =>
       sp = forall' f $
         eqlF f (compF' (quote @(Hom obj) $ UU (idm a)) (pick' 0)) $ pick' 0
 
-  unitO :: (LogicAlgebra (obj ()), Typeable (), Eq (), Show (), Arg ()) => obj ()
+  unitO :: (LogicAlgebra (obj ()), Categorical ()) => obj ()
     
-  categoryLaws :: (LogicAlgebra (obj ()), Typeable (), Eq (), Show (), Arg ()) =>
+  categoryLaws :: (LogicAlgebra (obj ()), Categorical ()) =>
     [EvalUnit obj] -> ([(String, Prop (Hom obj))], [EvalUnit obj])
   categoryLaws [] = ([compAssSpec @obj unitO unitO unitO unitO, idLSpec @obj unitO unitO, idRSpec @obj unitO unitO], [U unitO])
   categoryLaws objs' = (compAssoc ++ idL ++ idR, objs)

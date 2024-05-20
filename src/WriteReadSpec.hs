@@ -11,15 +11,14 @@ import Data.Functor.Contravariant ((>$<))
 import CategNatAlgebra (Nat(..))
 import Foreign.C.Types
 import Foreign.Ptr(Ptr, castPtr)
-import Foreign.Marshal.Alloc
+import Foreign.Marshal.Alloc (callocBytes, free)
 import Foreign.C (CString, castCCharToChar, newCString, peekCString, castCharToCChar)
 import Hedgehog (Gen, PropertyT)
 import Hedgehog.Internal.Property (forAll, evalIO)
-import Hedgehog.Internal.Gen (string, alpha, integral)
+import Hedgehog.Internal.Gen (string, alpha)
 import Hedgehog.Internal.Range (constant)
 import Hedgehog.Function.Internal (fnWith, forAllFn, Arg, CoGen, Fn, Vary(vary))
 import GHC.Generics (Generic)
-import Data.Kind (Type, Constraint)
 
 {- |
   In C type signature is:
@@ -73,25 +72,21 @@ foreign import capi "unistd.h write" write :: CInt -> Ptr () -> CULong -> IO CLo
 -}
 foreign import capi "unistd.h read" read :: CInt -> Ptr () -> CULong -> IO CLong
 
-type family Categorical (t :: Type) :: Constraint
-type instance Categorical t = (Typeable t, Eq t, Show t, Arg t)
 newtype Path = Path {p :: [CChar]} deriving (Typeable, Eq, Generic)
 instance Show Path where
   show (Path p) = map castCCharToChar p
 deriving instance Generic CChar
 instance Arg CChar
 instance Arg Path
-newtype Buf = PreCString {str :: [CChar]} deriving (Typeable, Eq, Show, Generic)
+newtype Buf = PreCString {str :: [CChar]} deriving (Typeable, Eq, Generic)
+instance Show Buf where
+  show (PreCString b) = map castCCharToChar b
 instance Arg Buf
-
 
 class CategAlgebra ioObj => WriteReadSpec ioObj where
   path :: (LogicAlgebra (ioObj Path), Categorical Path) =>
     ioObj Path
   
-  -- count :: (LogicAlgebra (ioObj Nat), Categorical Nat) =>
-  --   ioObj Nat
-
   buf :: (LogicAlgebra (ioObj Buf), Categorical Buf) =>
     ioObj Buf
 
@@ -114,7 +109,6 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
         eqlF bufHom (quote' . UU $ idm @ioObj buf) $
         compF' (writeMF @ioObj (pick' 0)) (readMF @ioObj (pick' 0))
 
-  pathToNat :: PFormula (ioObj Path) -> PFormula (ioObj Nat)
   convertTo :: Prop (ioObj Path) -> Prop (Hom ioObj)
   convertFrom :: PFormula (Hom ioObj) -> PFormula (ioObj Path)
 
@@ -133,7 +127,6 @@ data IOMorphism = forall a b. (Show b, Eq b, Typeable b, Show a, Eq a, Typeable 
 data IOHom = forall a b. (Show a, Eq a, Typeable a, Show b, Eq b, Typeable b) =>
   IOHom {ioDom :: Gen (IO a), ioMorphs :: Gen (Fn a (IO b))}
   
-
 instance Typeable a => Show (IO a) where
   show v = showsTypeRep (typeOf v) ""
 
@@ -154,7 +147,7 @@ instance Determinable IOHom where
           in evalIO $ (/=) <$> (d >>= f) <*> y
       _ -> pure True
 
-  eql (IOHom (dom :: Gen (IO a)) _) (UU v1) (UU v2) = do
+  eql (IOHom dom _) (UU v1) (UU v2) = do
     d <- forAll dom
     case cast v1 of
       Just (IOMorphism f) ->
@@ -171,7 +164,7 @@ instance LogicAlgebra IOHom where
   ground p = p
   elemF h x e = contain h $ x e
   eqlF h x y e = eql h (x e) (y e)
-  forall' (IOHom _ (morphs :: Gen (Fn a (IO b)))) j e = do
+  forall' (IOHom _ morphs) j e = do
     m <- forAllFn morphs
     j $ UU (IOMorphism (m =<<)) : e
 
@@ -223,7 +216,6 @@ instance CategAlgebra NamedIOSet where
 instance WriteReadSpec NamedIOSet where
   path = NamedIOSet "Path" pathGen pathCoGen
   buf = NamedIOSet "Buffer" bufGen bufCoGen
-  pathToNat = id
   convertFrom = id
   convertTo = id
   writeMF x e = UU $ writeM @NamedIOSet (x e)
