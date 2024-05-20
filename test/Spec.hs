@@ -1,7 +1,7 @@
 import CategAlgebra
 import CatLaws ( NamedSet(NamedSet) )
 import NatTests (natLaws)
-import WriteReadTest ( writeReadLaws)
+import WriteReadTest (writeReadLaws)
 import Data.Bifunctor (bimap)
 import Hedgehog
 import Hedgehog.Internal.Property (PropertyName(PropertyName))
@@ -17,17 +17,17 @@ instance Tester NamedSet where
       comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
       comps2 = (,) <$> sets <*> sets
       compAssocParams =
-        map (\(U (NamedSet n _ _ _), U (NamedSet n2 _ _ _),
-        U (NamedSet n3 _ _ _), U (NamedSet n4 _ _ _) ) ->
+        map (\(U (NamedSet n _ _), U (NamedSet n2 _ _),
+        U (NamedSet n3 _ _), U (NamedSet n4 _ _) ) ->
         "(" ++ n ++ ", " ++ n2 ++ ", " ++ n3 ++ ", " ++ n4 ++ ")") comps4
-      compIdParams = map (\(U (NamedSet n _ _ _), U (NamedSet n2 _ _ _)) -> 
+      compIdParams = map (\(U (NamedSet n _ _), U (NamedSet n2 _ _)) -> 
         "(" ++ n ++ ", " ++ n2 ++ ")") comps2
       params = compAssocParams ++ compIdParams ++ compIdParams
       tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) specs params
 
 main :: IO ()
 main = do
-  -- _ <- checkParallel $ catLaws @NamedSet
-  -- _ <- checkParallel $ natLaws @NamedSet
-  _ <- checkParallel $ writeReadLaws @NamedIOSet
+  _ <- checkParallel $ catLaws @NamedSet
+  _ <- checkParallel $ natLaws @NamedSet
+  -- _ <- checkParallel $ writeReadLaws @NamedIOSet
   pure ()

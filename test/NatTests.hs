@@ -11,10 +11,10 @@ import Data.Bifunctor (bimap)
 import Hedgehog.Internal.Property
 
 instance CategNatAlgebra NamedSet where
-  nat = NamedSet "Nat" g vary (N 0)
+  nat = NamedSet "Nat" g vary
     where
       g = N <$> integral (Hedgehog.Internal.Range.constant 0 maxBound)
-  succM = Morphism (N 0) (\(N n) -> N (n + 1))
+  succM = Morphism (\(N n) -> N (n + 1))
 
 
 class CategNatAlgebra obj => NatTester obj where
@@ -29,12 +29,12 @@ instance NatTester NamedSet where
       comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
       comps2 = (,) <$> sets <*> sets
       compAssocParams =
-        map (\(U (NamedSet n _ _ _), U (NamedSet n2 _ _ _),
-        U (NamedSet n3 _ _ _), U (NamedSet n4 _ _ _) ) ->
+        map (\(U (NamedSet n _ _), U (NamedSet n2 _ _),
+        U (NamedSet n3 _ _), U (NamedSet n4 _ _) ) ->
         "(" ++ n ++ ", " ++ n2 ++ ", " ++ n3 ++ ", " ++ n4 ++ ")") comps4
-      compIdParams = map (\(U (NamedSet n _ _ _), U (NamedSet n2 _ _ _)) -> 
+      compIdParams = map (\(U (NamedSet n _ _), U (NamedSet n2 _ _)) -> 
         "(" ++ n ++ ", " ++ n2 ++ ")") comps2
       params = compAssocParams ++ compIdParams ++ compIdParams
       category_tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) cat_laws params
-      natParams = (\(U (NamedSet n _ _ _)) -> "(" ++ n ++ ", " ++ n ++ ")") (last sets)
+      natParams = (\(U (NamedSet n _ _)) -> "(" ++ n ++ ", " ++ n ++ ")") (last sets)
       nat_tests = (succ_id_spec ++ natParams, succidp >>= assert) : category_tests

@@ -9,25 +9,15 @@ import Hedgehog.Function.Internal
 
 -- ! ---------------------------------------------------------------------- ! --
 -- ! Instances ! --
-data (Show a, Eq a, Typeable a, Arg a) => NamedSet a = 
-  NamedSet {setName :: String, gen :: Gen a, cogen :: CoGen a, startVal :: a}
+data (Categorical a) => NamedSet a = 
+  NamedSet {setName :: String, gen :: Gen a, cogen :: CoGen a}
 data MorphismImpl = forall a b. (Show b, Eq b, Typeable b, Show a, Eq a, Typeable a) => 
-  Morphism {val :: a, f :: a -> b} deriving (Typeable)
+  Morphism {f :: a -> b} deriving (Typeable)
 data HomImpl = forall a b. (Show a, Eq a, Typeable a, Show b, Eq b, Typeable b) =>
   Hom {dom :: Gen a, morphs :: Gen (Fn a b)}
 
-instance Eq MorphismImpl where
-  (Morphism v1 f) == (Morphism v2 g) =
-    --v1 == v2 && f v1 == g v1
-    case cast v2 of
-      Just x -> x == v1 &&
-        case cast $ g v2 of
-          Just y -> f v1 == y
-          _ -> False
-      _ -> False
-
 instance Show MorphismImpl where
-  show (Morphism v f) = (showsTypeRep $ typeOf v) " -> " ++ showsTypeRep (typeOf $ f v) ""
+  show (Morphism f) = (showsTypeRep $ typeOf f) ""
 
 -- type instance forall s. UFormula s = [UU] -> UU
 -- type instance forall s. Prop s = PropertyT IO Bool
@@ -44,17 +34,19 @@ instance Determinable HomImpl where
     d <- forAll dom
     f <- forAllFn ms
     case cast v of
-      Just (Morphism _ g) -> pure $
+      Just (Morphism g) -> pure $
         case cast d of
-          Just x -> Morphism d f /= Morphism x g -- x ~ d
+          Just x -> (fromJust . cast $ f d) /= g x -- x ~ d
           _ -> True
       _ -> pure True
 
   eql (Hom (dom :: Gen a) _) (UU v1) (UU v2) = do
     d <- forAll dom
     case cast v1 of
-      Just (Morphism _ f) -> case cast v2 of
-        Just (Morphism _ g) -> pure $ Morphism (fromJust $ cast d) f == Morphism (fromJust $ cast d) g
+      Just (Morphism f) -> case cast v2 of
+        Just (Morphism g) ->
+          let x = fromJust $ cast d
+            in pure $ f (fromJust $ cast d) == (fromJust . cast $ g x)
         _ -> pure False
       _ -> pure False
 
@@ -63,10 +55,9 @@ instance LogicAlgebra HomImpl where
   ground p = p
   elemF h x e = contain h $ x e
   eqlF h x y e = eql h (x e) (y e)
-  forall' (Hom (dom :: Gen a) (morphs :: Gen (Fn a b))) j e = do
-    v <- forAll dom
+  forall' (Hom _ (morphs :: Gen (Fn a b))) j e = do
     m <- forAllFn morphs
-    j $ UU (Morphism v m) : e
+    j $ UU (Morphism m) : e
 
 instance Universum (NamedSet a) where
   type UFormula (NamedSet a) = [UU] -> UU
@@ -75,15 +66,14 @@ instance Universum (NamedSet a) where
 
 instance (Show a, Eq a, Typeable a, Arg a) => Determinable (NamedSet a) where
   type Prop (NamedSet a) = PropertyT IO Bool
-  contain (NamedSet _ ga _ _) (UU v) = not <$> do
+  contain (NamedSet _ ga _) (UU v) = not <$> do
     el <- forAll ga
     let x = fromJust $ cast v
       in pure $ x /= el
 
-  eql (NamedSet _ _ _ st) (UU v1) (UU v2) = do
-    let x = fromJust $ cast v1
+  eql (NamedSet _ (_ :: Gen a) _) (UU (v1 :: t)) (UU v2) = do
+    let x = fromJust $ cast @t @a v1
         y = fromJust $ cast v2
-        _ = st == x -- to specify the type to which x and y are casted
       in pure $ y == x
 
 instance (Show a, Eq a, Typeable a, Arg a) => LogicAlgebra (NamedSet a) where
@@ -91,7 +81,7 @@ instance (Show a, Eq a, Typeable a, Arg a) => LogicAlgebra (NamedSet a) where
   ground p = p
   elemF h x e = contain h $ x e
   eqlF h x y e = eql h (x e) (y e)
-  forall' (NamedSet _ ga _ _) j e = do
+  forall' (NamedSet _ ga _) j e = do
     a <- forAll ga
     j $ UU a : e
  
@@ -99,8 +89,8 @@ instance CategAlgebra NamedSet where
   type Morphism NamedSet = MorphismImpl
   type Hom NamedSet = HomImpl
 
-  hom (NamedSet _ ga cga _) (NamedSet _ gb _ _) = Hom ga $ fnWith cga gb
-  comp (Morphism v f) (Morphism _ g) = Morphism v (g . fromJust . cast . f)
+  hom (NamedSet _ ga cga) (NamedSet _ gb _) = Hom ga $ fnWith cga gb
+  comp (Morphism f) (Morphism g) = Morphism (g . fromJust . cast . f)
   compF x y e = go (x e) (y e)
     where
       go (UU f') (UU g') =
@@ -108,5 +98,5 @@ instance CategAlgebra NamedSet where
             g = fromJust . cast $ g'
           in UU $ comp @NamedSet f g
 
-  idm (NamedSet _ _ _ sv) = Morphism sv id
-  unitO = NamedSet "Unit" (pure ()) vary ()
+  idm (NamedSet _ (_ :: Gen a) _) = Morphism $ id @a
+  unitO = NamedSet "Unit" (pure ()) vary
