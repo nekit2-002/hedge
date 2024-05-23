@@ -1,17 +1,24 @@
 module WriteReadTest where
 
 import CategAlgebra (EvalUnit(U))
-import Data.Bifunctor (bimap)
+import Hedgehog.Internal.Runner (check)
 import WriteReadSpec
-import Hedgehog.Internal.Property
+    ( NamedIOSet(NamedIOSet), WriteReadSpec(writeReadSpec) )
+import Hedgehog.Internal.Property (assert, property, withTests)
+import System.TimeIt (timeIt)
 
 class WriteReadSpec ioObj => WriteReadTester ioObj where
-  writeReadLaws :: Group
+  writeReadLaws :: IO [Bool]
 
 instance WriteReadTester NamedIOSet where
-  writeReadLaws = Group "Read ∘ Write = id laws" $
-    (PropertyName write_read_n, withTests 1000 $ property p):
-    map (bimap PropertyName (withTests 300 . property)) category_tests
+  writeReadLaws =
+    (:) <$> (do
+      putStrLn $ "\ESC[96m" ++ write_read_n
+      timeIt . check . withTests 1000 . property $ p) <*>
+    -- (PropertyName write_read_n, withTests 1000 $ property p):
+    mapM (\(pn, p) -> do
+    putStrLn $ "\ESC[96m" ++ pn
+    timeIt . check . withTests 300 . property $ p) category_tests
     where
       (specs, sets) = writeReadSpec @NamedIOSet
       (write_read_spec, write_read_idp) = head specs
