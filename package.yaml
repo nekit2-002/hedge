@@ -40,6 +40,7 @@ dependencies:
 - base >= 4.7 && < 5
 - hedgehog
 - hedgehog-fn
+- timeit
 
 ghc-options:
 - -Wall

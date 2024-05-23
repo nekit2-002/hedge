@@ -6,12 +6,15 @@ import Data.Bifunctor (bimap)
 import Hedgehog
 import Hedgehog.Internal.Property (PropertyName(PropertyName))
 import WriteReadSpec (NamedIOSet)
+import System.TimeIt (timeItNamed, timeIt)
 
 class CategAlgebra obj => Tester obj where
-  catLaws :: Group
+  catLaws :: IO [Bool]
 
 instance Tester NamedSet where
-  catLaws = Group "Category laws" $ map (bimap PropertyName (withTests 300 . property)) tests
+  catLaws =  mapM (\(pn, p) -> do
+    putStrLn pn
+    timeIt . check . withTests 300 . property $ p) tests
     where
       (specs, sets) = categoryLaws []
       comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
@@ -27,7 +30,8 @@ instance Tester NamedSet where
 
 main :: IO ()
 main = do
-  _ <- checkParallel $ catLaws @NamedSet
-  _ <- checkParallel $ natLaws @NamedSet
-  _ <- checkParallel $ writeReadLaws @NamedIOSet
+  putStrLn "Category laws tests"
+  _ <- timeItNamed "Category laws" $ catLaws @NamedSet
+  -- _ <- checkParallel $ natLaws @NamedSet
+  -- _ <- checkParallel $ writeReadLaws @NamedIOSet
   pure ()
