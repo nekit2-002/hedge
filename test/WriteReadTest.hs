@@ -18,7 +18,7 @@ instance WriteReadTester NamedIOSet where
     -- (PropertyName write_read_n, withTests 1000 $ property p):
     mapM (\(pn, p) -> do
     putStrLn $ "\ESC[96m" ++ pn
-    timeIt . check . withTests 300 . property $ p) category_tests
+    timeIt . check . withTests 1000 . property $ p) category_tests
     where
       (specs, sets) = writeReadSpec @NamedIOSet
       (write_read_spec, write_read_idp) = head specs

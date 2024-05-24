@@ -1,17 +1,17 @@
 module DistribTests where
 
 import DistribSpec
-import CategAlgebra 
+import CategAlgebra ( EvalUnit(U), UU(UU) ) 
 import CatLaws
 import Hedgehog.Internal.Range (constantBounded)
 import Hedgehog.Internal.Gen (integral) 
 import Hedgehog.Function (Vary(vary))
-import Data.Typeable
+import Data.Typeable ( cast )
 -- import Data.Bifunctor
 import Hedgehog.Internal.Runner (check)
-import Data.Maybe
+import Data.Maybe ( fromJust )
 import WriteReadTest (concatParams)
-import Hedgehog.Internal.Property
+import Hedgehog.Internal.Property ( assert, property, withTests )
 import System.TimeIt (timeIt)
 
 class DistribSpec obj => DistribTests obj where

@@ -27,6 +27,7 @@ library
       CategAlgebra
       CategNatAlgebra
       DistribSpec
+      PalindromeSpec
       WriteReadSpec
   other-modules:
       Paths_algebra
@@ -62,6 +63,7 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-name-shadowing -Wno-orphans
   build-depends:
       base >=4.7 && <5
+    , bytestring
     , hedgehog
     , hedgehog-fn
     , timeit
@@ -104,6 +106,7 @@ executable algebra-exe
   build-depends:
       algebra
     , base >=4.7 && <5
+    , bytestring
     , hedgehog
     , hedgehog-fn
     , timeit
@@ -116,6 +119,7 @@ test-suite algebra-test
       CatLaws
       DistribTests
       NatTests
+      PalindromeTests
       WriteReadTest
       Paths_algebra
   autogen-modules:
@@ -151,6 +155,7 @@ test-suite algebra-test
   build-depends:
       algebra
     , base >=4.7 && <5
+    , bytestring
     , hedgehog
     , hedgehog-fn
     , timeit
