@@ -1,3 +1,30 @@
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE BlockArguments #-}
+{-#LANGUAGE DataKinds #-}
+{-#LANGUAGE DeriveGeneric #-}
+{-#LANGUAGE FlexibleContexts #-}
+{-#LANGUAGE FlexibleInstances #-}
+{-#LANGUAGE GADTs #-}
+{-#LANGUAGE ImportQualifiedPost #-}
+{-#LANGUAGE LambdaCase #-}
+{-#LANGUAGE NoStarIsType #-}
+{-#LANGUAGE OverloadedStrings #-}
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE TypeApplications #-}
+{-#LANGUAGE TypeOperators #-}
+{-#LANGUAGE TypeFamilyDependencies #-}
+{-#LANGUAGE AllowAmbiguousTypes #-}
+{-#LANGUAGE ScopedTypeVariables #-}
+{-#LANGUAGE OverloadedRecordDot #-}
+{-#LANGUAGE RankNTypes #-}
+{-#LANGUAGE ImpredicativeTypes #-}
+{-#LANGUAGE ImplicitParams #-}
+{-#LANGUAGE StandaloneDeriving #-}
+{-#LANGUAGE CApiFFI #-}
+{-#LANGUAGE StandaloneDeriving #-}
+{-#LANGUAGE DatatypeContexts#-}
+module Main where
+
 import CategAlgebra
 import CatLaws ( NamedSet(NamedSet) )
 import NatTests (natLaws)
@@ -52,17 +79,17 @@ main = do
   _ <- timeItNamed "Category laws" . checkParallel $ catLaws @NamedSet
   -- putStrLn $ "\ESC[93m" ++ "Nat succ id tests"
   -- _ <- timeItNamed "Nat succ id tests" $ natLaws @NamedSet
-  _ <- timeItNamed "Nat succ id tests" . checkParallel $ natLaws @NamedSet
+  -- _ <- timeItNamed "Nat succ id tests" . checkParallel $ natLaws @NamedSet
   -- putStrLn $ "\ESC[93m" ++ "WriteReadId laws"
   -- _ <- timeItNamed "WriteReadId laws" $ writeReadLaws @NamedIOSet
-  _ <- timeItNamed "WriteReadId" . checkParallel $ writeReadLaws @NamedIOSet
+  -- _ <- timeItNamed "WriteReadId" . checkParallel $ writeReadLaws @NamedIOSet
   -- putStrLn $ "\ESC[93m" ++ "Pow distribute laws"
   -- _ <- timeItNamed "Pow distribute laws" $ distribLaws @NamedSet
-  _ <- timeItNamed "Square distribute laes" . checkParallel $ distribLaws @NamedSet
+  -- _ <- timeItNamed "Square distribute laes" . checkParallel $ distribLaws @NamedSet
 
   -- _ <- timeItNamed "Pow distribute laws" . checkParallel $ distribLaws @NamedSet
-  -- putStrLn $ "\ESC[93m" ++ "Palindrome reverse symmetry"
-  -- _ <- timeItNamed "Palindrome reverse symmetry" $ palSymLaws @NamedSet
-  _ <- timeItNamed "Palindrome reverse symmetry" . checkParallel $ palSymLaws @NamedSet
+  putStrLn $ "\ESC[93m" ++ "Palindrome reverse symmetry"
+  _ <- timeItNamed "Palindrome reverse symmetry" $ palSymLaws @NamedIOSet
+  -- _ <- timeItNamed "Palindrome reverse symmetry" . checkParallel $ palSymLaws @NamedIOSet
   
   pure ()

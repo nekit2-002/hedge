@@ -1,3 +1,29 @@
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE BlockArguments #-}
+{-#LANGUAGE DataKinds #-}
+{-#LANGUAGE DeriveGeneric #-}
+{-#LANGUAGE FlexibleContexts #-}
+{-#LANGUAGE FlexibleInstances #-}
+{-#LANGUAGE GADTs #-}
+{-#LANGUAGE ImportQualifiedPost #-}
+{-#LANGUAGE LambdaCase #-}
+{-#LANGUAGE NoStarIsType #-}
+{-#LANGUAGE OverloadedStrings #-}
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE TypeApplications #-}
+{-#LANGUAGE TypeOperators #-}
+{-#LANGUAGE TypeFamilyDependencies #-}
+{-#LANGUAGE AllowAmbiguousTypes #-}
+{-#LANGUAGE ScopedTypeVariables #-}
+{-#LANGUAGE OverloadedRecordDot #-}
+{-#LANGUAGE RankNTypes #-}
+{-#LANGUAGE ImpredicativeTypes #-}
+{-#LANGUAGE ImplicitParams #-}
+{-#LANGUAGE StandaloneDeriving #-}
+{-#LANGUAGE CApiFFI #-}
+{-#LANGUAGE StandaloneDeriving #-}
+-- {-#LANGUAGE DatatypeContexts#-}
+
 module CategNatAlgebra where
 import CategAlgebra
 import Data.Int (Int32)

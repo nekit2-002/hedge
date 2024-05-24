@@ -1,18 +1,47 @@
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE BlockArguments #-}
+{-#LANGUAGE DataKinds #-}
+{-#LANGUAGE DeriveGeneric #-}
+{-#LANGUAGE FlexibleContexts #-}
+{-#LANGUAGE FlexibleInstances #-}
+{-#LANGUAGE GADTs #-}
+{-#LANGUAGE ImportQualifiedPost #-}
+{-#LANGUAGE LambdaCase #-}
+{-#LANGUAGE NoStarIsType #-}
+{-#LANGUAGE OverloadedStrings #-}
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE TypeApplications #-}
+{-#LANGUAGE TypeOperators #-}
+{-#LANGUAGE TypeFamilyDependencies #-}
+{-#LANGUAGE AllowAmbiguousTypes #-}
+{-#LANGUAGE ScopedTypeVariables #-}
+{-#LANGUAGE OverloadedRecordDot #-}
+{-#LANGUAGE RankNTypes #-}
+{-#LANGUAGE ImpredicativeTypes #-}
+{-#LANGUAGE ImplicitParams #-}
+{-#LANGUAGE StandaloneDeriving #-}
+{-#LANGUAGE CApiFFI #-}
+{-#LANGUAGE StandaloneDeriving #-}
+-- {-#LANGUAGE DatatypeContexts#-}
+
 module PalindromeSpec where
 import CategAlgebra
 import Data.Int
 import Data.Typeable
+import Foreign.C.String
+import Foreign.C.Types
 import GHC.Generics (Generic)
 import Hedgehog.Function.Internal
-import Data.ByteString.Internal 
+import WriteReadSpec ()
 
+foreign import capi "palindrome.h is_palindrome" isPalindrome :: CString -> CBool
 
-isPalindrome :: String -> Bool
-isPalindrome cs = cs == reverse cs
+-- isPalindrome :: String -> Bool
+-- isPalindrome cs = cs == reverse cs
 
-newtype Palindrome = P {p :: [Int8]} deriving (Typeable, Eq, Generic)
+newtype Palindrome = P {p :: [CChar]} deriving (Typeable, Eq, Generic)
 instance Show Palindrome where
-  show (P p) = map (w2c . fromIntegral) p
+  show (P p) = map castCCharToChar p
 instance Arg Palindrome
 
 class CategAlgebra obj => PalindromeSpec obj where

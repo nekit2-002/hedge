@@ -32,7 +32,6 @@ default-extensions:
 - ImpredicativeTypes
 - ImplicitParams
 - StandaloneDeriving
-- MultiParamTypeClasses
 - CApiFFI
 - StandaloneDeriving
 

@@ -1,3 +1,29 @@
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE BlockArguments #-}
+{-#LANGUAGE DataKinds #-}
+{-#LANGUAGE DeriveGeneric #-}
+{-#LANGUAGE FlexibleContexts #-}
+{-#LANGUAGE FlexibleInstances #-}
+{-#LANGUAGE GADTs #-}
+{-#LANGUAGE ImportQualifiedPost #-}
+{-#LANGUAGE LambdaCase #-}
+{-#LANGUAGE NoStarIsType #-}
+{-#LANGUAGE OverloadedStrings #-}
+{-#LANGUAGE TypeFamilies #-}
+{-#LANGUAGE TypeApplications #-}
+{-#LANGUAGE TypeOperators #-}
+{-#LANGUAGE TypeFamilyDependencies #-}
+{-#LANGUAGE AllowAmbiguousTypes #-}
+{-#LANGUAGE ScopedTypeVariables #-}
+{-#LANGUAGE OverloadedRecordDot #-}
+{-#LANGUAGE RankNTypes #-}
+{-#LANGUAGE ImpredicativeTypes #-}
+{-#LANGUAGE ImplicitParams #-}
+{-#LANGUAGE StandaloneDeriving #-}
+{-#LANGUAGE CApiFFI #-}
+{-#LANGUAGE StandaloneDeriving #-}
+-- {-#LANGUAGE DatatypeContexts#-}
+
 module PalindromeTests where
 
 import Data.Typeable
@@ -16,76 +42,89 @@ import System.TimeIt (timeIt)
 import PalindromeSpec
 import Data.Functor.Contravariant ((>$<))
 import CatLaws
-import Data.ByteString.Internal (c2w, w2c)
+import Foreign.C.Types
+import Foreign.C (castCharToCChar, castCCharToChar, newCString)
+import WriteReadSpec
 
+class PalindromeSpec ioObj => PalindromeTest ioObj where
+  palSymLaws :: IO [Bool]
+  -- palSymLaws :: Group
 
-class PalindromeSpec obj => PalindromeTest obj where
-  -- palSymLaws :: IO [Bool]
-  palSymLaws :: Group
+instance PalindromeSpec NamedIOSet where
+  pal = NamedIOSet "PalindromeSet" palindromeGen palindromCoGen
+  res = NamedIOSet "Bool" bool (vary :: CoGen Bool)
 
-instance PalindromeSpec NamedSet where
-  pal = NamedSet "PalindromeSet" palindromeGen palindromCoGen
-  res = NamedSet "Bool" bool (vary :: CoGen Bool)
+  palM = IOMorphism $ \(p' :: IO Palindrome) -> do
+    (P p'') <- p'
+    let buf = map castCCharToChar p''
+    b <- newCString buf
+    (CBool n') <- pure $ isPalindrome b
+    n <- pure $ toInteger n'
+    -- _ <- free buf
+    if n == 1 then pure True else pure False
+    
+  revPalM = IOMorphism $ \(p' :: IO Palindrome) -> do
+    (P p'') <- p'
+    let buf = map castCCharToChar p''
+    b <- newCString (reverse buf)
+    (CBool n') <- pure $ isPalindrome b
+    n <- pure $ toInteger n'
+    -- _ <- free buf
+    if n == 1 then pure True else pure False
+    
 
-  palM = Morphism $ \(P prebuf) ->
-    let buf = map (w2c . fromIntegral @Int8 @Word8) prebuf
-      in isPalindrome buf
-  revPalM = Morphism $ \(P prebuf) ->
-    let  buf = map (w2c . fromIntegral @Int8 @Word8) prebuf
-      in isPalindrome $ reverse buf
-
-instance PalindromeTest NamedSet where
-  palSymLaws = Group "Palindrom symmetry" $ map (bimap PropertyName (withTests 1000 . property)) sym_tests
-    where
-      (specs, sets) = symEqSpec @NamedSet
-      (symSpec, symp) = head specs
-      cat_laws = tail specs
-      comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
-      comps2 = (,) <$> sets <*> sets
-      compAssocParams =
-        map (\(U (NamedSet n _ _), U (NamedSet n2 _ _),
-        U (NamedSet n3 _ _), U (NamedSet n4 _ _) ) ->
-        "(" ++ n ++ ", " ++ n2 ++ ", " ++ n3 ++ ", " ++ n4 ++ ")") comps4
-      compIdParams = map (\(U (NamedSet n _ _ ), U (NamedSet n2 _ _)) -> 
-        "(" ++ n ++ ", " ++ n2 ++ ")") comps2
-      params = compAssocParams ++ compIdParams ++ compIdParams
-      category_tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) cat_laws params
-      symEqParams' = tail sets
-      symEqParams = concatParams $ map (\(U (NamedSet n _ _)) -> n) symEqParams'
-      sym_tests = (symSpec ++ symEqParams, symp >>= assert) : category_tests
-
-  -- palSymLaws = (:) <$> (do
-  --     putStrLn $ "\ESC[96m" ++ symEq_n
-  --     timeIt . check . withTests 1000 . property $ p) <*>
-  --   mapM (\(pn, p) -> do
-  --   putStrLn $ "\ESC[96m" ++ pn
-  --   timeIt . check . withTests 1000 . property $ p) category_tests
+instance PalindromeTest NamedIOSet where
+  -- palSymLaws = Group "Palindrom symmetry" $ map (bimap PropertyName (withTests 1000 . property)) sym_tests
   --   where
-  --     (specs, sets) = symEqSpec @NamedSet
+  --     (specs, sets) = symEqSpec @NamedIOSet
   --     (symSpec, symp) = head specs
   --     cat_laws = tail specs
   --     comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
   --     comps2 = (,) <$> sets <*> sets
   --     compAssocParams =
-  --       map (\(U (NamedSet n _ _), U (NamedSet n2 _ _),
-  --       U (NamedSet n3 _ _), U (NamedSet n4 _ _) ) ->
+  --       map (\(U (NamedIOSet n _ _), U (NamedIOSet n2 _ _),
+  --       U (NamedIOSet n3 _ _), U (NamedIOSet n4 _ _) ) ->
   --       "(" ++ n ++ ", " ++ n2 ++ ", " ++ n3 ++ ", " ++ n4 ++ ")") comps4
-  --     compIdParams = map (\(U (NamedSet n _ _ ), U (NamedSet n2 _ _)) -> 
+  --     compIdParams = map (\(U (NamedIOSet n _ _ ), U (NamedIOSet n2 _ _)) -> 
   --       "(" ++ n ++ ", " ++ n2 ++ ")") comps2
   --     params = compAssocParams ++ compIdParams ++ compIdParams
   --     category_tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) cat_laws params
   --     symEqParams' = tail sets
-  --     symEqParams = concatParams $ map (\(U (NamedSet n _ _)) -> n) symEqParams'
-  --     (symEq_n, p) = (symSpec ++ symEqParams, symp >>= assert)
+  --     symEqParams = concatParams $ map (\(U (NamedIOSet n _ _)) -> n) symEqParams'
+  --     sym_tests = (symSpec ++ symEqParams, symp >>= assert) : category_tests
+
+  palSymLaws = (:) <$> (do
+      putStrLn $ "\ESC[96m" ++ symEq_n
+      timeIt . check . withTests 1000 . property $ p) <*>
+    mapM (\(pn, p) -> do
+    putStrLn $ "\ESC[96m" ++ pn
+    timeIt . check . withTests 1000 . property $ p) category_tests
+    where
+      (specs, sets) = symEqSpec @NamedIOSet
+      (symSpec, symp) = head specs
+      cat_laws = tail specs
+      comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
+      comps2 = (,) <$> sets <*> sets
+      compAssocParams =
+        map (\(U (NamedIOSet n _ _), U (NamedIOSet n2 _ _),
+        U (NamedIOSet n3 _ _), U (NamedIOSet n4 _ _) ) ->
+        "(" ++ n ++ ", " ++ n2 ++ ", " ++ n3 ++ ", " ++ n4 ++ ")") comps4
+      compIdParams = map (\(U (NamedIOSet n _ _ ), U (NamedIOSet n2 _ _)) -> 
+        "(" ++ n ++ ", " ++ n2 ++ ")") comps2
+      params = compAssocParams ++ compIdParams ++ compIdParams
+      category_tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) cat_laws params
+      symEqParams' = tail sets
+      symEqParams = concatParams $ map (\(U (NamedIOSet n _ _)) -> n) symEqParams'
+      (symEq_n, p) = (symSpec ++ symEqParams, symp >>= assert)
 
 
 palindromeGen :: Gen Palindrome
-palindromeGen = P . (\s -> map (fromIntegral @Word8 @Int8 . c2w) $ s ++ reverse s) <$> string (constant 1 6) alpha
+palindromeGen = P . (\s -> map castCharToCChar $ s ++ reverse s) <$> string (constant 1 6) alpha
 
 palindromCoGen :: CoGen Palindrome
 palindromCoGen = go >$< (vary  :: CoGen [Int8])
   where
-    go (P p) = 
-      let buf' = map (w2c . fromIntegral @Int8 @Word8) p
-          buf = buf' ++ reverse buf'
-        in map (fromIntegral @Word8 @Int8 . c2w) buf
+    go (P p') =
+      let prep = map castCCharToChar p'
+          p = prep ++ reverse prep
+        in map ((\(CChar n) -> n) . castCharToCChar) p
