@@ -26,6 +26,7 @@ library
   exposed-modules:
       CategAlgebra
       CategNatAlgebra
+      DistribSpec
       WriteReadSpec
   other-modules:
       Paths_algebra
@@ -113,6 +114,7 @@ test-suite algebra-test
   main-is: Spec.hs
   other-modules:
       CatLaws
+      DistribTests
       NatTests
       WriteReadTest
       Paths_algebra

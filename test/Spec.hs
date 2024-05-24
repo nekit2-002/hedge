@@ -2,9 +2,10 @@ import CategAlgebra
 import CatLaws ( NamedSet(NamedSet) )
 import NatTests (natLaws)
 import WriteReadTest (writeReadLaws)
-import Hedgehog ( assert, property, withTests, check )
+import Hedgehog ( assert, property, withTests, check, checkParallel )
 import WriteReadSpec (NamedIOSet)
 import System.TimeIt (timeItNamed, timeIt)
+import DistribTests (DistribTests(distribLaws))
 
 class CategAlgebra obj => Tester obj where
   catLaws :: IO [Bool]
@@ -31,6 +32,10 @@ main = do
   putStrLn $ "\ESC[93m" ++ "Category laws tests"
   _ <- timeItNamed "Category laws" $ catLaws @NamedSet
   -- _ <- checkParallel $ natLaws @NamedSet
-  putStrLn $ "\ESC[93m" ++ "WriteReadId laws"
-  _ <- timeItNamed "WriteReadId laws" $ writeReadLaws @NamedIOSet
+  -- putStrLn $ "\ESC[93m" ++ "WriteReadId laws"
+  -- _ <- timeItNamed "WriteReadId laws" $ writeReadLaws @NamedIOSet
+  putStrLn $ "\ESC[93m" ++ "Pow distribute laws"
+  _ <- timeItNamed "Pow distribute laws" $ distribLaws @NamedSet
+
+  -- _ <- timeIt . checkParallel $ distribLaws @NamedSet
   pure ()

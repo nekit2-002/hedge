@@ -116,7 +116,7 @@ class CategAlgebra ioObj => WriteReadSpec ioObj where
   convertFrom :: PFormula (Hom ioObj) -> PFormula (ioObj Path)
 
   writeReadSpec :: (LogicAlgebra (ioObj ()), LogicAlgebra (ioObj Path), LogicAlgebra (ioObj Nat),
-    LogicAlgebra (ioObj Buf)) 
+    LogicAlgebra (ioObj Buf), Categorical Nat, Categorical Path, Categorical Buf, Categorical ()) 
     => ([(String, Prop (Hom ioObj))], [EvalUnit ioObj])
   writeReadSpec = (writeReadId @ioObj : props, objs)
     where
