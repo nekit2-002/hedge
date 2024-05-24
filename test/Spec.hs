@@ -32,6 +32,8 @@ main :: IO ()
 main = do
   putStrLn $ "\ESC[93m" ++ "Category laws tests"
   _ <- timeItNamed "Category laws" $ catLaws @NamedSet
+  putStrLn $ "\ESC[93m" ++ "Nat succ id tests"
+  _ <- timeItNamed "Nat succ id tests" $ natLaws @NamedSet
   -- _ <- checkParallel $ natLaws @NamedSet
   putStrLn $ "\ESC[93m" ++ "WriteReadId laws"
   _ <- timeItNamed "WriteReadId laws" $ writeReadLaws @NamedIOSet

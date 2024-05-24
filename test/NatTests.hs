@@ -7,8 +7,10 @@ import CatLaws (MorphismImpl(Morphism), NamedSet(NamedSet))
 import Hedgehog.Internal.Range (constant)
 import Hedgehog.Internal.Gen (integral) 
 import Hedgehog.Function (Vary(vary))
-import Data.Bifunctor (bimap)
-import Hedgehog.Internal.Property
+-- import Data.Bifunctor (bimap)
+import System.TimeIt ( timeIt )
+import Hedgehog.Internal.Runner ( check )
+import Hedgehog.Internal.Property ( assert, property, withTests )
 
 instance CategNatAlgebra NamedSet where
   nat = NamedSet "Nat" g vary
@@ -18,10 +20,12 @@ instance CategNatAlgebra NamedSet where
 
 
 class CategNatAlgebra obj => NatTester obj where
-  natLaws :: Group
+  natLaws :: IO [Bool]
 
 instance NatTester NamedSet where
-  natLaws = Group "Laws for natural ints (int32, natSuccId spec)" $ map (bimap PropertyName (withTests 2000 . property)) nat_tests
+  natLaws = mapM (\(pn, p) -> do
+    putStrLn $ "\ESC[96m" ++ pn
+    timeIt . check . withTests 1000 . property $ p) nat_tests
     where
       (specs, sets) = succIdSpec @NamedSet
       (succ_id_spec, succidp) = head specs
