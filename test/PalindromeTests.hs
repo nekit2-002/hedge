@@ -3,7 +3,7 @@ module PalindromeTests where
 import Data.Typeable
 -- import Data.Bifunctor
 import Hedgehog.Internal.Runner (check)
-import Data.Maybe
+import Data.Bifunctor ( Bifunctor(bimap) )
 import Data.Word
 import CategAlgebra
 import WriteReadTest (concatParams)
@@ -20,7 +20,8 @@ import Data.ByteString.Internal (c2w, w2c)
 
 
 class PalindromeSpec obj => PalindromeTest obj where
-  palSymLaws :: IO [Bool]
+  -- palSymLaws :: IO [Bool]
+  palSymLaws :: Group
 
 instance PalindromeSpec NamedSet where
   pal = NamedSet "PalindromeSet" palindromeGen palindromCoGen
@@ -34,13 +35,7 @@ instance PalindromeSpec NamedSet where
       in isPalindrome $ reverse buf
 
 instance PalindromeTest NamedSet where
-  palSymLaws = (:) <$> (do
-      putStrLn $ "\ESC[96m" ++ symEq_n
-      timeIt . check . withTests 1000 . property $ p) <*>
-    -- (PropertyName write_read_n, withTests 1000 $ property p):
-    mapM (\(pn, p) -> do
-    putStrLn $ "\ESC[96m" ++ pn
-    timeIt . check . withTests 1000 . property $ p) category_tests
+  palSymLaws = Group "Palindrom symmetry" $ map (bimap PropertyName (withTests 1000 . property)) sym_tests
     where
       (specs, sets) = symEqSpec @NamedSet
       (symSpec, symp) = head specs
@@ -57,7 +52,31 @@ instance PalindromeTest NamedSet where
       category_tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) cat_laws params
       symEqParams' = tail sets
       symEqParams = concatParams $ map (\(U (NamedSet n _ _)) -> n) symEqParams'
-      (symEq_n, p) = (symSpec ++ symEqParams, symp >>= assert)
+      sym_tests = (symSpec ++ symEqParams, symp >>= assert) : category_tests
+
+  -- palSymLaws = (:) <$> (do
+  --     putStrLn $ "\ESC[96m" ++ symEq_n
+  --     timeIt . check . withTests 1000 . property $ p) <*>
+  --   mapM (\(pn, p) -> do
+  --   putStrLn $ "\ESC[96m" ++ pn
+  --   timeIt . check . withTests 1000 . property $ p) category_tests
+  --   where
+  --     (specs, sets) = symEqSpec @NamedSet
+  --     (symSpec, symp) = head specs
+  --     cat_laws = tail specs
+  --     comps4 = (,,,) <$> sets <*> sets <*> sets <*> sets
+  --     comps2 = (,) <$> sets <*> sets
+  --     compAssocParams =
+  --       map (\(U (NamedSet n _ _), U (NamedSet n2 _ _),
+  --       U (NamedSet n3 _ _), U (NamedSet n4 _ _) ) ->
+  --       "(" ++ n ++ ", " ++ n2 ++ ", " ++ n3 ++ ", " ++ n4 ++ ")") comps4
+  --     compIdParams = map (\(U (NamedSet n _ _ ), U (NamedSet n2 _ _)) -> 
+  --       "(" ++ n ++ ", " ++ n2 ++ ")") comps2
+  --     params = compAssocParams ++ compIdParams ++ compIdParams
+  --     category_tests = zipWith (\(n, prop) ps -> (n ++ ps, prop >>= assert)) cat_laws params
+  --     symEqParams' = tail sets
+  --     symEqParams = concatParams $ map (\(U (NamedSet n _ _)) -> n) symEqParams'
+  --     (symEq_n, p) = (symSpec ++ symEqParams, symp >>= assert)
 
 
 palindromeGen :: Gen Palindrome
