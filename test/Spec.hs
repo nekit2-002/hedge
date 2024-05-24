@@ -23,7 +23,6 @@
 {-#LANGUAGE CApiFFI #-}
 {-#LANGUAGE StandaloneDeriving #-}
 {-#LANGUAGE DatatypeContexts#-}
-module Main where
 
 import CategAlgebra
 import CatLaws ( NamedSet(NamedSet) )
