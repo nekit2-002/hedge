@@ -1,36 +1,21 @@
-{-#LANGUAGE TypeFamilies #-}
 {-#LANGUAGE BlockArguments #-}
 {-#LANGUAGE DataKinds #-}
-{-#LANGUAGE DeriveGeneric #-}
 {-#LANGUAGE FlexibleContexts #-}
 {-#LANGUAGE FlexibleInstances #-}
 {-#LANGUAGE GADTs #-}
-{-#LANGUAGE ImportQualifiedPost #-}
-{-#LANGUAGE LambdaCase #-}
 {-#LANGUAGE NoStarIsType #-}
 {-#LANGUAGE OverloadedStrings #-}
-{-#LANGUAGE TypeFamilies #-}
 {-#LANGUAGE TypeApplications #-}
-{-#LANGUAGE TypeOperators #-}
 {-#LANGUAGE TypeFamilyDependencies #-}
 {-#LANGUAGE AllowAmbiguousTypes #-}
 {-#LANGUAGE ScopedTypeVariables #-}
-{-#LANGUAGE OverloadedRecordDot #-}
-{-#LANGUAGE RankNTypes #-}
 {-#LANGUAGE ImpredicativeTypes #-}
-{-#LANGUAGE ImplicitParams #-}
-{-#LANGUAGE StandaloneDeriving #-}
 {-#LANGUAGE CApiFFI #-}
-{-#LANGUAGE StandaloneDeriving #-}
--- {-#LANGUAGE DatatypeContexts#-}
 
 module PalindromeTests where
-
-import Data.Typeable
 -- import Data.Bifunctor
 import Hedgehog.Internal.Runner (check)
-import Data.Bifunctor ( Bifunctor(bimap) )
-import Data.Word
+import Data.Bifunctor (Bifunctor(bimap))
 import CategAlgebra
 import WriteReadTest (concatParams)
 import Hedgehog.Internal.Property
@@ -41,10 +26,10 @@ import Data.Int (Int8)
 import System.TimeIt (timeIt)
 import PalindromeSpec
 import Data.Functor.Contravariant ((>$<))
-import CatLaws
 import Foreign.C.Types
 import Foreign.C (castCharToCChar, castCCharToChar, newCString)
 import WriteReadSpec
+import PalindromeSpec
 
 class PalindromeSpec ioObj => PalindromeTest ioObj where
   palSymLaws :: IO [Bool]
@@ -58,7 +43,7 @@ instance PalindromeSpec NamedIOSet where
     (P p'') <- p'
     let buf = map castCCharToChar p''
     b <- newCString buf
-    (CBool n') <- pure $ isPalindrome b
+    (CBool n') <- detectPalindrome b
     n <- pure $ toInteger n'
     -- _ <- free buf
     if n == 1 then pure True else pure False
@@ -67,7 +52,7 @@ instance PalindromeSpec NamedIOSet where
     (P p'') <- p'
     let buf = map castCCharToChar p''
     b <- newCString (reverse buf)
-    (CBool n') <- pure $ isPalindrome b
+    (CBool n') <- detectPalindrome b
     n <- pure $ toInteger n'
     -- _ <- free buf
     if n == 1 then pure True else pure False
