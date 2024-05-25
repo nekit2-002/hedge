@@ -11,6 +11,7 @@
 {-#LANGUAGE AllowAmbiguousTypes #-}
 {-#LANGUAGE ScopedTypeVariables #-}
 {-#LANGUAGE ImpredicativeTypes #-}
+{-#LANGUAGE ConstrainedClassMethods #-}
 {-#LANGUAGE StandaloneDeriving #-}
 {-#LANGUAGE CApiFFI #-}
 {-#LANGUAGE DatatypeContexts#-}
@@ -27,6 +28,7 @@ import Data.Bits ((.|.))
 import Data.Functor.Contravariant ((>$<))
 import CategNatAlgebra (Nat(..))
 import Foreign.C.Types
+import System.IO.Unsafe (unsafePerformIO)
 import Foreign.Ptr(Ptr, castPtr)
 import Foreign.Marshal.Alloc (callocBytes, free)
 import Foreign.C (CString, castCCharToChar, newCString, peekCString, castCharToCChar)
@@ -147,8 +149,11 @@ data IOMorphism = forall a b. (Categorical b, Categorical a) =>
 data IOHom = forall a b. (Categorical a, Categorical b) =>
   IOHom {ioDom :: Gen (IO a), ioMorphs :: Gen (Fn a (IO b))}
   
-instance Typeable a => Show (IO a) where
-  show v = showsTypeRep (typeOf v) ""
+-- instance Typeable a => Show (IO a) where
+--   show v = showsTypeRep (typeOf v) ""
+
+instance Show a => Show (IO a) where
+  show = show . unsafePerformIO
 
 instance Universum IOHom where
   type UFormula IOHom = [UU] -> UU
@@ -265,7 +270,7 @@ instance WriteReadSpec NamedIOSet where
           count = fromIntegral $ length buf''
       buf <- newCString buf''
       cpath <- path >>= newCString
-      fd@(CInt n) <- open cpath (CInt $ 0x0002 .|. 0x00000200) (CUShort $ 0000400 .|. 0000200)
+      fd@(CInt n) <- open cpath (CInt $ 02 .|. 0100) (CUShort $ 00400 .|. 00200)
       if n < 0 then fromJust Nothing
         else do
         wnbs <- write fd (castPtr buf) (CULong $ intToWord count)
@@ -279,7 +284,7 @@ longToULong :: CLong -> CULong
 longToULong (CLong n) = CULong . fromIntegral $ abs n -- TODO This should be implemented differently
 
 pathGen :: Gen Path
-pathGen = Path . (\s -> map castCharToCChar $ "/Users/nikita/hedge/tmp/" ++ s ++ ".txt")
+pathGen = Path . (\s -> map castCharToCChar $ "/home/nikita/hedge/tmp/" ++ s ++ ".txt")
   <$> string (constant 1 5) alpha
 
 pathCoGen :: CoGen Path
@@ -287,7 +292,7 @@ pathCoGen = go >$< (vary :: (CoGen [Int8]))
   where
     go (Path p') =
       let prep = replaceWithAlpha $ map castCCharToChar p'
-          p = "/Users/nikita/hedge/tmp/" ++ prep ++ ".txt"
+          p = "/home/nikita/hedge/tmp/" ++ prep ++ ".txt"
         in map ((\(CChar n) -> n) . castCharToCChar) p
 
 replaceWithAlpha :: String -> String

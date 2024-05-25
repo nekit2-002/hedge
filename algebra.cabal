@@ -24,6 +24,7 @@ source-repository head
 
 library
   exposed-modules:
+      AtoiSpec
       CategAlgebra
       CategNatAlgebra
       DistribSpec
@@ -114,6 +115,7 @@ test-suite algebra-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      AtoiTests
       CatLaws
       DistribTests
       NatTests

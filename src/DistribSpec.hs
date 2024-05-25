@@ -10,6 +10,7 @@
 {-#LANGUAGE TypeFamilyDependencies #-}
 {-#LANGUAGE AllowAmbiguousTypes #-}
 {-#LANGUAGE ScopedTypeVariables #-}
+{-#LANGUAGE ConstrainedClassMethods #-}
 {-#LANGUAGE ImpredicativeTypes #-}
 {-#LANGUAGE CApiFFI #-}
 -- {-#LANGUAGE DatatypeContexts#-}

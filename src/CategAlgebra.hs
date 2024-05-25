@@ -10,6 +10,7 @@
 {-#LANGUAGE AllowAmbiguousTypes #-}
 {-#LANGUAGE ScopedTypeVariables #-}
 {-#LANGUAGE ImpredicativeTypes #-}
+{-#LANGUAGE ConstrainedClassMethods #-}
 {-#LANGUAGE CApiFFI #-}
 
 

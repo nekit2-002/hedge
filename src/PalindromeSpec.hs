@@ -10,23 +10,24 @@
 {-#LANGUAGE TypeFamilyDependencies #-}
 {-#LANGUAGE AllowAmbiguousTypes #-}
 {-#LANGUAGE ScopedTypeVariables #-}
+{-#LANGUAGE ConstrainedClassMethods #-}
 {-#LANGUAGE ImpredicativeTypes #-}
 {-#LANGUAGE CApiFFI #-}
 
 module PalindromeSpec where
 import CategAlgebra
 import Data.Int
-import Data.Typeable
-import Foreign.C.String
+import Data.Typeable ( Typeable )
+import Foreign.C.String ( castCCharToChar, CString )
 import Foreign.C.Types
 import GHC.Generics (Generic)
-import Hedgehog.Function.Internal
+import Hedgehog.Function.Internal ( Arg )
 import WriteReadSpec ()
 
-foreign import capi "palindrome.h is_palindrome" isPalindrome :: CString -> CBool
+foreign import capi "palindrome.h is_palindrome" detectPalindrome :: CString -> IO CBool
 
--- isPalindrome :: String -> Bool
--- isPalindrome cs = cs == reverse cs
+-- detectPalindrome :: String -> Bool
+-- detectPalindrome cs = cs == reverse cs
 
 newtype Palindrome = P {p :: [CChar]} deriving (Typeable, Eq, Generic)
 instance Show Palindrome where
