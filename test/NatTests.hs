@@ -22,7 +22,6 @@
 {-#LANGUAGE StandaloneDeriving #-}
 {-#LANGUAGE CApiFFI #-}
 {-#LANGUAGE StandaloneDeriving #-}
-{-#LANGUAGE DatatypeContexts#-}
 
 module NatTests where
 -- ojgoig

@@ -22,7 +22,6 @@
 {-#LANGUAGE StandaloneDeriving #-}
 {-#LANGUAGE CApiFFI #-}
 {-#LANGUAGE StandaloneDeriving #-}
-{-#LANGUAGE DatatypeContexts#-}
 
 import CategAlgebra
 import CatLaws ( NamedSet(NamedSet) )
