@@ -1,5 +1,5 @@
 SRCS = $(wildcard ../src/*.hs)
-CFILES = $(wildcard ../src/*.c)
+CFILES = $(wildcard ../src/csrc/*.c)
 TESTERS = $(filter-out Spec.hs, $(wildcard *.hs))
 LIB_DIR = ./src
 TEST_DIR= ./test

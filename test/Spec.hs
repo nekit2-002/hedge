@@ -20,10 +20,12 @@ import Hedgehog ( assert, property, withTests, check, checkParallel )
 import WriteReadSpec (NamedIOSet (NamedIOSet))
 import AtoiTests
 import PalindromeTests
+import TestFind
 import Data.Bifunctor ( Bifunctor(bimap) )
 import System.TimeIt (timeItNamed, timeIt)
 import Hedgehog.Internal.Property (Group(..), PropertyName(..))
 import DistribTests (DistribTests(distribLaws))
+
 
 class CategAlgebra obj => Tester obj where
   catLaws :: IO [Bool]
@@ -80,5 +82,8 @@ main = do
   -- _ <- timeItNamed "Palindrome reverse symmetry" . checkParallel $ palSymLaws @NamedIOSet
   putStrLn $  "\ESC[93m" ++ "Atoi = Read @Int tests"
   _ <- timeItNamed "Atoi = Read @Int tests" $ atoiTests @NamedIOSet
+
+  putStrLn $  "\ESC[93m" ++ "Transform = Id tests"
+  _ <- timeItNamed "Transform = Id tests" $ findTests @NamedIOSet
   
   pure ()

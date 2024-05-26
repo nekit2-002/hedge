@@ -1,0 +1,1 @@
+int transform (int s);

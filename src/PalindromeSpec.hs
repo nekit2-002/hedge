@@ -16,7 +16,6 @@
 
 module PalindromeSpec where
 import CategAlgebra
-import Data.Int
 import Data.Typeable ( Typeable )
 import Foreign.C.String ( castCCharToChar, CString )
 import Foreign.C.Types
@@ -24,7 +23,7 @@ import GHC.Generics (Generic)
 import Hedgehog.Function.Internal ( Arg )
 import WriteReadSpec ()
 
-foreign import capi "palindrome.h is_palindrome" detectPalindrome :: CString -> IO CBool
+foreign import capi "csrc/palindrome.h is_palindrome" detectPalindrome :: CString -> IO CBool
 
 -- detectPalindrome :: String -> Bool
 -- detectPalindrome cs = cs == reverse cs

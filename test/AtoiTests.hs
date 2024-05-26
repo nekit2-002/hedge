@@ -1,6 +1,5 @@
 {-#LANGUAGE BlockArguments #-}
 {-#LANGUAGE DataKinds #-}
-{-#LANGUAGE DeriveGeneric #-}
 {-#LANGUAGE FlexibleContexts #-}
 {-#LANGUAGE FlexibleInstances #-}
 {-#LANGUAGE GADTs #-}
@@ -20,7 +19,7 @@ import CategAlgebra
 import WriteReadSpec
 import WriteReadTest (concatParams)
 import Hedgehog.Function.Internal
-import Hedgehog.Internal.Gen (string, Gen, digit)
+import Hedgehog.Internal.Gen (string, Gen, digit, int)
 import Hedgehog.Internal.Range (constant)
 import Foreign.C (castCCharToChar, newCString, castCharToCChar)
 import Foreign.C.Types
@@ -52,7 +51,9 @@ instance AtoiSpec NamedIOSet where
     
 
 numSGen :: Gen NumS
-numSGen = NS . map castCharToCChar <$> string (constant 1 10) digit
+numSGen = do
+  l <- int (constant 2 10)
+  NS . map castCharToCChar <$> string (constant 1 l) digit
 
 numSCogen :: CoGen NumS
 numSCogen = go >$< (vary :: (CoGen [Int8]))

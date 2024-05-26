@@ -40,7 +40,6 @@ dependencies:
 - hedgehog
 - hedgehog-fn
 - timeit
-- bytestring
 
 ghc-options:
 - -Wall
