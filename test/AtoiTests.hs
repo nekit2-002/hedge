@@ -1,17 +1,5 @@
-{-#LANGUAGE BlockArguments #-}
-{-#LANGUAGE DataKinds #-}
-{-#LANGUAGE FlexibleContexts #-}
-{-#LANGUAGE FlexibleInstances #-}
-{-#LANGUAGE GADTs #-}
-{-#LANGUAGE NoStarIsType #-}
-{-#LANGUAGE OverloadedStrings #-}
 {-#LANGUAGE TypeApplications #-}
-{-#LANGUAGE TypeFamilyDependencies #-}
 {-#LANGUAGE AllowAmbiguousTypes #-}
-{-#LANGUAGE ScopedTypeVariables #-}
-{-#LANGUAGE ConstrainedClassMethods #-}
-{-#LANGUAGE ImpredicativeTypes #-}
-{-#LANGUAGE CApiFFI #-}
 
 module AtoiTests where
 

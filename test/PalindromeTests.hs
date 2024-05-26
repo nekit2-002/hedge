@@ -1,22 +1,11 @@
-{-#LANGUAGE BlockArguments #-}
-{-#LANGUAGE DataKinds #-}
-{-#LANGUAGE FlexibleContexts #-}
-{-#LANGUAGE FlexibleInstances #-}
-{-#LANGUAGE GADTs #-}
-{-#LANGUAGE NoStarIsType #-}
-{-#LANGUAGE OverloadedStrings #-}
 {-#LANGUAGE TypeApplications #-}
-{-#LANGUAGE TypeFamilyDependencies #-}
 {-#LANGUAGE AllowAmbiguousTypes #-}
-{-#LANGUAGE ScopedTypeVariables #-}
-{-#LANGUAGE ImpredicativeTypes #-}
-{-#LANGUAGE CApiFFI #-}
 
 module PalindromeTests where
 -- import Data.Bifunctor
 import Hedgehog.Internal.Runner (check)
 import Data.Bifunctor (Bifunctor(bimap))
-import CategAlgebra
+import CategAlgebra (EvalUnit(U))
 import WriteReadTest (concatParams)
 import Hedgehog.Internal.Property
 import Hedgehog.Internal.Gen (bool, Gen, string, alpha)
