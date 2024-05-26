@@ -8,7 +8,7 @@ import CategAlgebra
 import System.TimeIt (timeIt)
 import WriteReadSpec (NamedIOSet(..))
 import WriteReadTest (concatParams)
-import Hedgehog.Internal.Property (assert, property, withTests, Group(..), PropertyName(..))
+import Hedgehog.Internal.Property (assert, property, withTests)
 import FindSpec
 
 class FindSpec ioObj => FindTester ioObj where
@@ -17,7 +17,7 @@ class FindSpec ioObj => FindTester ioObj where
 instance FindTester NamedIOSet where
   findTests = (:) <$> (do
       putStrLn $ "\ESC[96m" ++ transform_n
-      timeIt . check . withTests 200000 . property $ p) <*>
+      timeIt . check . withTests 250000 . property $ p) <*>
     mapM (\(pn, p) -> do
     putStrLn $ "\ESC[96m" ++ pn
     timeIt . check . withTests 1000 . property $ p) category_tests

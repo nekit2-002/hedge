@@ -40,6 +40,7 @@ dependencies:
 - hedgehog
 - hedgehog-fn
 - timeit
+- storable-record
 
 ghc-options:
 - -Wall

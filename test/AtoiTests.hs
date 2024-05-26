@@ -40,8 +40,7 @@ instance AtoiSpec NamedIOSet where
 
 numSGen :: Gen NumS
 numSGen = do
-  l <- int (constant 2 10)
-  NS . map castCharToCChar <$> string (constant 1 l) digit
+  NS . map castCharToCChar <$> string (constant 1 10) digit
 
 numSCogen :: CoGen NumS
 numSCogen = go >$< (vary :: (CoGen [Int8]))
