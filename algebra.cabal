@@ -33,6 +33,7 @@ library
       GetFirstSpec
       GetSndSpec
       PalindromeSpec
+      PartialSumSpec
       SubStringSpec
       WriteReadSpec
   other-modules:
@@ -128,6 +129,7 @@ test-suite algebra-test
       GetSndTests
       NatTests
       PalindromeTests
+      PartialSumTests
       SubStringTests
       TestFind
       WriteReadTest

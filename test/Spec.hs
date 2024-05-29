@@ -14,6 +14,7 @@ import GetFirstTest
 import GetFieldTests
 import GetSndTests
 import SubStringTests
+import PartialSumTests
 import Data.Bifunctor ( Bifunctor(bimap) )
 import System.TimeIt (timeItNamed, timeIt)
 import Hedgehog.Internal.Property (Group(..), PropertyName(..))
@@ -86,7 +87,10 @@ main = do
 
   -- putStrLn $  "\ESC[93m" ++ "getsecond = snd tests"
   -- _ <- timeItNamed "getsecond = snd tests" $ getSndTests @NamedIOSet
-  putStrLn $  "\ESC[93m" ++ "Substring == SubCopySubString"
-  _ <- timeItNamed "Substring == CopySubString" $ subStringTests @NamedIOSet
+  -- putStrLn $  "\ESC[93m" ++ "Substring == SubCopySubString"
+  -- _ <- timeItNamed "Substring == CopySubString" $ subStringTests @NamedIOSet
+
+  putStrLn $  "\ESC[93m" ++ "Array sum = Last of partial sum from child"
+  _ <- timeItNamed "Array sum = Last of partial sum from child" $ partialSumTests @NamedIOSet
   
   pure ()
