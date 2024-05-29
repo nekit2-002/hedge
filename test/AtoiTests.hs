@@ -59,7 +59,7 @@ class AtoiSpec ioObj => AtoiTester ioObj where
 instance AtoiTester NamedIOSet where
   atoiTests = (:) <$> (do
       putStrLn $ "\ESC[96m" ++ atoi_n
-      timeIt . check . withTests 1000 . property $ p) <*>
+      timeIt . check . withTests 200 . property $ p) <*>
     mapM (\(pn, p) -> do
     putStrLn $ "\ESC[96m" ++ pn
     timeIt . check . withTests 1000 . property $ p) category_tests

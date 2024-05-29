@@ -60,10 +60,10 @@ instance DistribTests NamedSet where
   --     int_tests = (distrib_spec ++ natParams, distp >>= assert) : category_tests
   distribLaws = (:) <$> (do
       putStrLn $ "\ESC[96m" ++ distrib_n
-      timeIt . check . withTests 1000 . property $ p) <*>
+      timeIt . check . withTests 30000 . property $ p) <*>
     mapM (\(pn, p) -> do
     putStrLn $ "\ESC[96m" ++ pn
-    timeIt . check . withTests 1000 . property $ p) category_tests
+    timeIt . check . withTests 30000 . property $ p) category_tests
     where
       (specs, sets) = distribSquareSpec @NamedSet
       (distribSpec, distribp) = head specs

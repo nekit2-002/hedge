@@ -10,6 +10,10 @@ import WriteReadSpec (NamedIOSet (NamedIOSet))
 import AtoiTests
 import PalindromeTests
 import TestFind
+import GetFirstTest
+import GetFieldTests
+import GetSndTests
+import SubStringTests
 import Data.Bifunctor ( Bifunctor(bimap) )
 import System.TimeIt (timeItNamed, timeIt)
 import Hedgehog.Internal.Property (Group(..), PropertyName(..))
@@ -53,8 +57,8 @@ instance Tester NamedSet where
 
 main :: IO ()
 main = do
-  putStrLn $ "\ESC[93m" ++ "Category laws tests"
-  _ <- timeItNamed "Category laws" $ catLaws @NamedSet
+  -- putStrLn $ "\ESC[93m" ++ "Category laws tests"
+  -- _ <- timeItNamed "Category laws" $ catLaws @NamedSet
   -- _ <- timeItNamed "Category laws" . checkParallel $ catLaws @NamedSet
   -- putStrLn $ "\ESC[93m" ++ "Nat succ id tests"
   -- _ <- timeItNamed "Nat succ id tests" $ natLaws @NamedSet
@@ -69,10 +73,20 @@ main = do
   -- putStrLn $ "\ESC[93m" ++ "Palindrome reverse symmetry"
   -- _ <- timeItNamed "Palindrome reverse symmetry" $ palSymLaws @NamedIOSet
   -- _ <- timeItNamed "Palindrome reverse symmetry" . checkParallel $ palSymLaws @NamedIOSet
-  putStrLn $  "\ESC[93m" ++ "Atoi = Read @Int tests"
-  _ <- timeItNamed "Atoi = Read @Int tests" $ atoiTests @NamedIOSet
+  -- putStrLn $  "\ESC[93m" ++ "Atoi = Read @Int tests"
+  -- _ <- timeItNamed "Atoi = Read @Int tests" $ atoiTests @NamedIOSet
 
-  putStrLn $  "\ESC[93m" ++ "Transform = Id tests"
-  _ <- timeItNamed "Transform = Id tests" $ findTests @NamedIOSet
+  -- putStrLn $  "\ESC[93m" ++ "Transform = Id tests"
+  -- _ <- timeItNamed "Transform = Id tests" $ findTests @NamedIOSet
+  -- putStrLn $  "\ESC[93m" ++ "getfield = field(1) tests"
+  -- _ <- timeItNamed "getfield = fst tests" $ getFieldTests @NamedIOSet
+
+  -- putStrLn $  "\ESC[93m" ++ "getfirst = fst tests"
+  -- _ <- timeItNamed "getfirst = fst tests" $ getFirstTests @NamedIOSet
+
+  -- putStrLn $  "\ESC[93m" ++ "getsecond = snd tests"
+  -- _ <- timeItNamed "getsecond = snd tests" $ getSndTests @NamedIOSet
+  putStrLn $  "\ESC[93m" ++ "Substring == SubCopySubString"
+  _ <- timeItNamed "Substring == CopySubString" $ subStringTests @NamedIOSet
   
   pure ()

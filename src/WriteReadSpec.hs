@@ -291,13 +291,9 @@ pathCoGen :: CoGen Path
 pathCoGen = go >$< (vary :: (CoGen [Int8]))
   where
     go (Path p') =
-      let prep = replaceWithAlpha $ map castCCharToChar p'
+      let prep = map castCCharToChar p'
           p = "/home/nikita/hedge/tmp/" ++ prep ++ ".txt"
         in map ((\(CChar n) -> n) . castCharToCChar) p
-
-replaceWithAlpha :: String -> String
-replaceWithAlpha [] = []
-replaceWithAlpha (c:cs) = if isAlpha c then c : replaceWithAlpha cs else 'a': replaceWithAlpha cs
 
 bufGen :: Gen Buf
 bufGen = PreCString <$> (map castCharToCChar <$> string (constant 10 20) alpha)
@@ -306,5 +302,5 @@ bufCoGen :: CoGen Buf
 bufCoGen = go >$< (vary :: (CoGen [Int8]))
   where
     go (PreCString cs) = 
-      let pres = replaceWithAlpha $ map castCCharToChar cs
+      let pres = map castCCharToChar cs
         in map ((\(CChar n) -> n) . castCharToCChar) pres

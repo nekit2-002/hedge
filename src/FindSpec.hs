@@ -22,7 +22,7 @@ import Data.Int
 import Data.Functor.Contravariant ( (>$<) )
 import Data.Typeable
 import Hedgehog.Function.Internal
-import Hedgehog.Internal.Gen
+import Hedgehog.Internal.Gen ( Gen, int32 )
 import WriteReadSpec
 import CategAlgebra
 import Hedgehog.Internal.Range (constantBounded, constant)

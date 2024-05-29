@@ -29,7 +29,11 @@ library
       CategNatAlgebra
       DistribSpec
       FindSpec
+      GetFieldSpec
+      GetFirstSpec
+      GetSndSpec
       PalindromeSpec
+      SubStringSpec
       WriteReadSpec
   other-modules:
       Paths_algebra
@@ -119,8 +123,12 @@ test-suite algebra-test
       AtoiTests
       CatLaws
       DistribTests
+      GetFieldTests
+      GetFirstTest
+      GetSndTests
       NatTests
       PalindromeTests
+      SubStringTests
       TestFind
       WriteReadTest
       Paths_algebra
