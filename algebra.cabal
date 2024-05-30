@@ -28,6 +28,7 @@ library
       CategAlgebra
       CategNatAlgebra
       DistribSpec
+      EraseInit
       FindSpec
       GetFieldSpec
       GetFirstSpec
@@ -124,6 +125,7 @@ test-suite algebra-test
       AtoiTests
       CatLaws
       DistribTests
+      EraseInitTests
       GetFieldTests
       GetFirstTest
       GetSndTests

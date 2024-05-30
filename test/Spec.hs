@@ -15,6 +15,7 @@ import GetFieldTests
 import GetSndTests
 import SubStringTests
 import PartialSumTests
+import EraseInitTests
 import Data.Bifunctor ( Bifunctor(bimap) )
 import System.TimeIt (timeItNamed, timeIt)
 import Hedgehog.Internal.Property (Group(..), PropertyName(..))
@@ -71,8 +72,8 @@ main = do
   -- _ <- timeItNamed "Pow distribute laws" $ distribLaws @NamedSet
   -- _ <- timeItNamed "Square distribute laes" . checkParallel $ distribLaws @NamedSet
 
-  putStrLn $ "\ESC[93m" ++ "Palindrome reverse symmetry"
-  _ <- timeItNamed "Palindrome reverse symmetry" $ palSymLaws @NamedIOSet
+  -- putStrLn $ "\ESC[93m" ++ "Palindrome reverse symmetry"
+  -- _ <- timeItNamed "Palindrome reverse symmetry" $ palSymLaws @NamedIOSet
   -- _ <- timeItNamed "Palindrome reverse symmetry" . checkParallel $ palSymLaws @NamedIOSet
   -- putStrLn $  "\ESC[93m" ++ "Atoi = Read @Int tests"
   -- _ <- timeItNamed "Atoi = Read @Int tests" $ atoiTests @NamedIOSet
@@ -92,5 +93,7 @@ main = do
 
   -- putStrLn $  "\ESC[93m" ++ "Array sum = Last of partial sum from child"
   -- _ <- timeItNamed "Array sum = Last of partial sum from child" $ partialSumTests @NamedIOSet
+  putStrLn $ "\ESC[93m" ++ "Erase initial segment tests"
+  _ <- timeItNamed "Erase initial segment tests" $ eraseTests @NamedIOSet
   
   pure ()
