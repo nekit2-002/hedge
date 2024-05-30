@@ -17,44 +17,75 @@
 module PalindromeSpec where
 import CategAlgebra
 import Data.Typeable ( Typeable )
-import Foreign.C.String ( castCCharToChar, CString )
-import Foreign.C.Types
+import Foreign.C.String
+import Foreign.C.Types ( CChar(..) )
+import Data.Functor.Contravariant ( (>$<) )
+import Data.Int ( Int8 )
+import Hedgehog.Internal.Gen ( Gen, alpha, string )
+import qualified Hedgehog.Internal.Range as Range
 import GHC.Generics (Generic)
-import Hedgehog.Function.Internal ( Arg )
-import WriteReadSpec ()
+import Hedgehog.Function.Internal ( Arg, CoGen, Vary(vary) ) 
+import WriteReadSpec 
 
-foreign import capi "csrc/palindrome.h is_palindrome" detectPalindrome :: CString -> IO CBool
+foreign import capi "csrc/palindrome.h copy_palindrome" copyPalindrome :: CString -> IO CString
+foreign import capi "csrc/palindrome.h reverse" palReverse :: CString -> IO CString
 
 -- detectPalindrome :: String -> Bool
 -- detectPalindrome cs = cs == reverse cs
 
 newtype Palindrome = P {p :: [CChar]} deriving (Typeable, Eq, Generic)
 instance Show Palindrome where
-  show (P p) = map castCCharToChar p
+  show (P p) = Prelude.map castCCharToChar p
 instance Arg Palindrome
 
-class CategAlgebra obj => PalindromeSpec obj where
-  pal :: (LogicAlgebra (obj Palindrome), Categorical Palindrome) =>
-    obj Palindrome
+class CategAlgebra ioObj => PalindromeSpec ioObj where
+  pal :: (LogicAlgebra (ioObj Palindrome), Categorical Palindrome) =>
+    ioObj Palindrome
 
-  res :: (LogicAlgebra (obj Bool), Categorical Bool) =>
-    obj Bool
+  copyPalM :: Morphism ioObj
+  revPalM :: Morphism ioObj
 
-  palM :: Morphism obj
-  revPalM :: Morphism obj
-
-  symEq :: (LogicAlgebra (obj Palindrome), Categorical Palindrome,
-   LogicAlgebra (obj Bool), Categorical Bool) =>
-    (String, Prop (Hom obj))
+  symEq :: (LogicAlgebra (ioObj Palindrome), Categorical Palindrome,
+   LogicAlgebra (ioObj Bool), Categorical Bool) =>
+    (String, Prop (Hom ioObj))
   symEq = ("Symmetry law", sp)
     where
-      palHom = hom @obj pal res
-      sp = eql palHom (UU $ palM @obj) (UU $ revPalM @obj)
+      palHom = hom @ioObj pal pal
+      comp' = comp @ioObj
+      sp = eql palHom (UU (idm @ioObj pal)) (UU $ comp' (copyPalM @ioObj) (revPalM @ioObj))
 
-  symEqSpec :: (LogicAlgebra (obj Palindrome), Categorical Palindrome,
-   LogicAlgebra (obj Bool), Categorical Bool, LogicAlgebra (obj ()),
+  symEqSpec :: (LogicAlgebra (ioObj Palindrome), Categorical Palindrome,
+   LogicAlgebra (ioObj Bool), Categorical Bool, LogicAlgebra (ioObj ()),
    Categorical ()) =>
-   ([(String, Prop (Hom obj))], [EvalUnit obj])
-  symEqSpec =  (symEq @obj : props, objs)
+   ([(String, Prop (Hom ioObj))], [EvalUnit ioObj])
+  symEqSpec =  (symEq @ioObj : props, ioObjs)
     where
-      (props, objs) = categoryLaws [U pal, U res]
+      (props, ioObjs) = categoryLaws [U pal]
+
+instance PalindromeSpec NamedIOSet where
+  pal = NamedIOSet "PalindromeSet" palindromeGen palindromCoGen
+
+  copyPalM = IOMorphism $ \(p' :: IO Palindrome) -> do
+    (P p'') <- p'
+    let buf = Prelude.map castCCharToChar p''
+    b <- newCString (reverse buf)
+    s <- copyPalindrome b >>= peekCString
+    pure . P $ Prelude.map castCharToCChar s
+
+  revPalM = IOMorphism $ \(p' :: IO Palindrome) -> do
+    (P p'') <- p'
+    let buf = Prelude.map castCCharToChar p''
+    b <- newCString (reverse buf)
+    s <- palReverse b >>= peekCString
+    pure . P $ Prelude.map castCharToCChar s
+
+palindromeGen :: Gen Palindrome
+palindromeGen = P . (\s -> Prelude.map castCharToCChar $ s ++ reverse s) <$> string (Range.constant 1 6) alpha
+
+palindromCoGen :: CoGen Palindrome
+palindromCoGen = go >$< (vary  :: CoGen [Int8])
+  where
+    go (P p') =
+      let prep = Prelude.map castCCharToChar p'
+          p = prep ++ reverse prep
+        in Prelude.map ((\(CChar n) -> n) . castCharToCChar) p

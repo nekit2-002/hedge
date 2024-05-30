@@ -18,34 +18,10 @@ import Data.Functor.Contravariant ((>$<))
 import Foreign.C.Types
 import Foreign.C (castCharToCChar, castCCharToChar, newCString)
 import WriteReadSpec
-import PalindromeSpec
 
 class PalindromeSpec ioObj => PalindromeTest ioObj where
   palSymLaws :: IO [Bool]
   -- palSymLaws :: Group
-
-instance PalindromeSpec NamedIOSet where
-  pal = NamedIOSet "PalindromeSet" palindromeGen palindromCoGen
-  res = NamedIOSet "Bool" bool (vary :: CoGen Bool)
-
-  palM = IOMorphism $ \(p' :: IO Palindrome) -> do
-    (P p'') <- p'
-    let buf = map castCCharToChar p''
-    b <- newCString buf
-    (CBool n') <- detectPalindrome b
-    n <- pure $ toInteger n'
-    -- _ <- free buf
-    if n == 1 then pure True else pure False
-    
-  revPalM = IOMorphism $ \(p' :: IO Palindrome) -> do
-    (P p'') <- p'
-    let buf = map castCCharToChar p''
-    b <- newCString (reverse buf)
-    (CBool n') <- detectPalindrome b
-    n <- pure $ toInteger n'
-    -- _ <- free buf
-    if n == 1 then pure True else pure False
-    
 
 instance PalindromeTest NamedIOSet where
   -- palSymLaws = Group "Palindrom symmetry" $ map (bimap PropertyName (withTests 1000 . property)) sym_tests
@@ -90,15 +66,3 @@ instance PalindromeTest NamedIOSet where
       symEqParams' = tail sets
       symEqParams = concatParams $ map (\(U (NamedIOSet n _ _)) -> n) symEqParams'
       (symEq_n, p) = (symSpec ++ symEqParams, symp >>= assert)
-
-
-palindromeGen :: Gen Palindrome
-palindromeGen = P . (\s -> map castCharToCChar $ s ++ reverse s) <$> string (constant 1 6) alpha
-
-palindromCoGen :: CoGen Palindrome
-palindromCoGen = go >$< (vary  :: CoGen [Int8])
-  where
-    go (P p') =
-      let prep = map castCCharToChar p'
-          p = prep ++ reverse prep
-        in map ((\(CChar n) -> n) . castCharToCChar) p

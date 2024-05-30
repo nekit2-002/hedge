@@ -71,8 +71,8 @@ main = do
   -- _ <- timeItNamed "Pow distribute laws" $ distribLaws @NamedSet
   -- _ <- timeItNamed "Square distribute laes" . checkParallel $ distribLaws @NamedSet
 
-  -- putStrLn $ "\ESC[93m" ++ "Palindrome reverse symmetry"
-  -- _ <- timeItNamed "Palindrome reverse symmetry" $ palSymLaws @NamedIOSet
+  putStrLn $ "\ESC[93m" ++ "Palindrome reverse symmetry"
+  _ <- timeItNamed "Palindrome reverse symmetry" $ palSymLaws @NamedIOSet
   -- _ <- timeItNamed "Palindrome reverse symmetry" . checkParallel $ palSymLaws @NamedIOSet
   -- putStrLn $  "\ESC[93m" ++ "Atoi = Read @Int tests"
   -- _ <- timeItNamed "Atoi = Read @Int tests" $ atoiTests @NamedIOSet
@@ -90,7 +90,7 @@ main = do
   -- putStrLn $  "\ESC[93m" ++ "Substring == SubCopySubString"
   -- _ <- timeItNamed "Substring == CopySubString" $ subStringTests @NamedIOSet
 
-  putStrLn $  "\ESC[93m" ++ "Array sum = Last of partial sum from child"
-  _ <- timeItNamed "Array sum = Last of partial sum from child" $ partialSumTests @NamedIOSet
+  -- putStrLn $  "\ESC[93m" ++ "Array sum = Last of partial sum from child"
+  -- _ <- timeItNamed "Array sum = Last of partial sum from child" $ partialSumTests @NamedIOSet
   
   pure ()
