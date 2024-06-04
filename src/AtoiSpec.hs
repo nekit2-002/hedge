@@ -38,7 +38,7 @@ foreign import capi "stdlib.h atoi" atoi :: CString -> IO CInt
 
 newtype NumS = NS {ns :: [CChar]} deriving (Typeable, Eq, Generic)
 instance Show NumS where
-  show (NS ns) = map castCCharToChar ns
+  show (NS ns) = show $ map castCCharToChar ns
 instance Arg NumS
 
 class CategAlgebra ioObj => AtoiSpec ioObj where
